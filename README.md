@@ -5,7 +5,7 @@ A small api for creating css element queries. For when the media just isn't enou
 
 Processors should be called before the window onload method so that they can be used to parse the available stylesheets. This is so that they can do not have to scan the available stylesheets multiple times with the help of the reinit method.
 
-## Units
+### Unit Processor
 
 Arguments for the unit handlers are denoted in the following list.
 
@@ -32,7 +32,7 @@ The system currently supports the following units:
 
 Listed below are examples of how to support percentage and em units. These processors are commented out in the dev source code, but are there for your copying and pasting convenience.
 
-#### %
+##### %
 ```javascript
 elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
     var parent = el.parentNode,
@@ -43,14 +43,14 @@ elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
 });
 ```
 
-#### em
+##### em
 ```javascript
 elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedStyle) {
     return (val / parseFloat(computedStyle.fontSize));
 });
 ```
 
-## Queries
+### Query Processor
 
 Queries that are already included include height and width. All queries support min and max values. All query handlers must return a number and be constructed in the following way:
 
