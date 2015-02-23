@@ -21,6 +21,7 @@ elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedSt
 ```
 
 ## Queries
+```javascript
 elementQuery.addProcessor('area', function (el, dimensions, computedStyle) {
     return dims.height * dims.width;
 });
@@ -37,6 +38,7 @@ elementQuery.addProcessor('perimeter', function (el, dimensions, computedStyle) 
         width = dims.width;
     return ((height * 2) + (width * 2));
 });
+```
 
 ## API Endpoints -- ElementQuery
 
