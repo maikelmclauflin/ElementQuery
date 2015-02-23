@@ -18,11 +18,19 @@ elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
 #### em
 ```javascript
 elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedStyle) {
-    return (val / parseFloat(el.style.fontSize));
+    return (val / parseFloat(computedStyle.fontSize));
 });
 ```
 
 ## Queries
+
+Queries that are already included include height and width. All queries support min and max values. All query handlers must return a number and be constructed in the following way:
+
+```javascript
+elementQuery.addProcessor(name, handler);
+```
+
+While the context of the handlers when they are run is the sensor object that they are tied to, use of this object and the attached elements is not recommended. Most of the calculations that you will need to do use information from the dimensions of the element and the styles of that element. Both the getComputedStyle and getBoundingClientRect functions have been applied to the element being sensed, are cached for all of the queries that are to be run against it.
 
 below are some examples of different queries that you can run on elements you are watching.
 
@@ -30,14 +38,17 @@ below are some examples of different queries that you can run on elements you ar
 elementQuery.addProcessor('area', function (el, dimensions, computedStyle) {
     return dims.height * dims.width;
 });
+
 elementQuery.addProcessor('diagonal', function (el, dimensions, computedStyle) {
     var height = dims.height,
         width = dims.width;
     return Math.pow((height * height * width * width), 0.5);
 });
+
 elementQuery.addProcessor('aspect', function (el, dimensions, computedStyle) {
     return dims.width / dims.height;
 });
+
 elementQuery.addProcessor('perimeter', function (el, dimensions, computedStyle) {
     var height = dims.height,
         width = dims.width;

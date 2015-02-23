@@ -422,7 +422,7 @@ elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
     return (val / parentVal);
 });
 elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedStyle) {
-    return (val / parseFloat(el.style.fontSize));
+    return (val / parseFloat(computedStyle.fontSize));
 });
 elementQuery.addProcessor('area', function (el, dimensions, computedStyle) {
     return dims.height * dims.width;
