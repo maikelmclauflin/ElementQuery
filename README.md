@@ -57,4 +57,4 @@ method that converts attribute strings into extend objects.
 resets the scroll positions on the shrink and expand divs so that they can sense another resize.
 
 #### Sensor.update();
-method that initializes the recalculation of the resized div, as determined by scroll events hosted in the children of the targeted element. First the values are recalulated, then the correct attributes are applied to the targeted html elements.
+method that initializes the recalculation of the resized div, as determined by scroll events hosted in the children of the targeted element. First the values are recalulated, then the correct attributes are added and removed to the targeted html elements.
