@@ -3,6 +3,8 @@ A small api for creating css element queries. For when the media just isn't enou
 
 ## Units
 
+listed below are examples of how to support percentage and em units
+
 #### %
 ```javascript
 elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
@@ -21,6 +23,9 @@ elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedSt
 ```
 
 ## Queries
+
+below are some examples of different queries that you can run on elements you are watching.
+
 ```javascript
 elementQuery.addProcessor('area', function (el, dimensions, computedStyle) {
     return dims.height * dims.width;
