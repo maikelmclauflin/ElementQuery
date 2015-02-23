@@ -1,5 +1,5 @@
 # ElementQuery
-A small api for creating css element queries. For when the media just isn't enough.
+A small api for creating css element queries. When the media just isn't enough.
 
 ## Processors
 
