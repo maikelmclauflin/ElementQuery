@@ -127,6 +127,31 @@
             }
             return false;
         },
+        regexMaker = function (attr, regex) {
+            var baseRegStr = regex.toString(),
+                converted = replaceRegExp(baseRegStr.slice(1, baseRegStr.length - 1), '{{{}}}', attr);
+            return new RegExp(converted, 'mgi');
+        },
+        attachScrollHandlers = function (sensor) {
+            var el = sensor.sensor,
+                handler = function (sensor, determinant) {
+                    return function (e) {
+                        var el = this;
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        if (determinant.apply(this, [sensor, this])) {
+                            sensor.update();
+                            sensor.resetScroller();
+                        }
+                    };
+                };
+            el.children[0].addEventListener('scroll', handler(sensor, function (sensor, el) {
+                return (el.offsetHeight > sensor.lastHeight || el.offsetWidth > sensor.lastWidth);
+            }), true);
+            el.children[1].addEventListener('scroll', handler(sensor, function (sensor, el) {
+                return (el.offsetHeight < sensor.lastHeight || el.offsetWidth < sensor.lastWidth);
+            }), true);
+        },
         baseRegExp = /,?([^,\s]*)\[[\s\t]*(min|max)-({{{}}})[\s\t]*[~$\^]?=[\s\t]*"([^"]*)"[\s\t]*]([^\n\s\{]*)/,
         attrRegExp = /\[[\s\t]*(min|max)-({{{}}})[\s\t]*[~$\^]?=[\s\t]*"([^"]*)"[\s\t]*]/;
     unitProcessors[''] = unitProcessors.px;
@@ -139,32 +164,10 @@
         }
         sensor.lastHeight = el.offsetHeight;
         sensor.lastWidth = el.offsetWidth;
-        sensor.attachScrollHandler();
+        attachScrollHandlers(sensor);
         return sensor;
     }
     Sensor.prototype = {
-        attachScrollHandler: function () {
-            var sensor = this,
-                el = sensor.sensor;
-            el.children[0].addEventListener('scroll', function (e) {
-                var el = this;
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                if (el.offsetHeight > sensor.lastHeight || el.offsetWidth > sensor.lastWidth) {
-                    sensor.update();
-                    sensor.resetScroller();
-                }
-            }, true);
-            el.children[1].addEventListener('scroll', function (e) {
-                var el = this;
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                if (el.offsetHeight < sensor.lastHeight || el.offsetWidth < sensor.lastWidth) {
-                    sensor.update();
-                    sensor.resetScroller();
-                }
-            }, true);
-        },
         update: function () {
             var i, n, m, o, v, args, unit, units, query, attrKey, values, valuesLen, currentValue, baseAttr, doer, convertedValue, sensor = this,
                 el = sensor.el,
@@ -213,9 +216,9 @@
         resetScroller: function () {
             var sensor = this,
                 sensorEl = sensor.sensor,
-                expander = sensorEl.children[0],
-                expanderChild = expander.children[0],
-                shrinker = sensorEl.children[1];
+                expander = sensor.expander,
+                expanderChild = sensor.expanderChild,
+                shrinker = sensor.shrinker;
             expanderChild.style.width = expander.offsetWidth + 10 + 'px';
             expanderChild.style.height = expander.offsetHeight + 10 + 'px';
             expander.scrollLeft = expander.scrollWidth;
@@ -284,40 +287,29 @@
         add: function (matcher) {
             var i, obj, sensor = this;
             obj = sensor.parseObject(matcher);
-            if (!sensor.hasWatcher(obj)) {
-                sensor.extendWatcher(obj);
-            }
+            // if (!sensor.hasWatcher(obj)) {
+            sensor.extendWatcher(obj);
+            // }
             return sensor;
         }
     };
 
     function ElementQuery(sheets) {
         var elQuery = this;
+        each(baseAttrs, function (obj, name) {
+            obj.regex = regexMaker(name, baseRegExp);
+        });
         elQuery.reinit(sheets);
         return elQuery;
     }
     ElementQuery.prototype = {
-        prefixes: ['min', 'max'],
-        regex: function (attr, regex) {
-            var elQ = this,
-                baseRegStr = regex.toString(),
-                converted = replaceRegExp(baseRegStr.slice(1, baseRegStr.length - 1), '{{{}}}', attr);
-            return new RegExp(converted, 'mgi');
-        },
         reinit: function (sheets) {
             var elQuery = this;
             if (sheets) {
                 elQuery.styles = sheets;
-                elQuery.updateQueries();
                 elQuery.update();
             }
             return elQuery;
-        },
-        updateQueries: function () {
-            var elQuery = this;
-            each(baseAttrs, function (obj, name) {
-                obj.regex = elQuery.regex(name, baseRegExp);
-            });
         },
         // parse the css
         update: function () {
@@ -340,7 +332,7 @@
                             targetedMeasurement = [],
                             currentMatches = [];
                         each(baseAttrs, function (obj, name) {
-                            var i, attrMatcher = elQuery.regex(name, attrRegExp),
+                            var i, attrMatcher = regexMaker(name, attrRegExp),
                                 maxedOut = currentSelector.match(attrMatcher),
                                 targeted = match.match(attrMatcher);
                             if (maxedOut) {
@@ -409,7 +401,7 @@
             var elQuery = this;
             baseAttrs[name] = {
                 fn: fn,
-                regex: elQuery.regex(name, baseRegExp)
+                regex: regexMaker(name, baseRegExp)
             };
             return elQuery;
         }
