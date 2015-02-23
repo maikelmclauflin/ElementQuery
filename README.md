@@ -37,7 +37,7 @@ attaches scroll handlers to the shink and expand watch divs
 
 #### Sensor.extendWatcher(extendObject);
 extends the watch parameters and breakpoints of the sensor. Takes one argument in the following format:
-```JSON
+```javascript
 {
     attribute: {
         numberLimit: {
