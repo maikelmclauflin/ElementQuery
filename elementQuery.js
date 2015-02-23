@@ -415,29 +415,29 @@
     win.ElementQuery = ElementQuery;
     win.elementQuery = new win.ElementQuery();
 }(window, document));
-elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
-    var parent = el.parentNode,
-        parentDims = parent.getBoundingClientRect(),
-        parentStyles = parent.getComputedStyle(),
-        parentVal = proc.apply(this, [parent, parentDims, parentStyles]);
-    return (val / parentVal);
-});
-elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedStyle) {
-    return (val / parseFloat(computedStyle.fontSize));
-});
-elementQuery.addProcessor('area', function (el, dimensions, computedStyle) {
-    return dims.height * dims.width;
-});
-elementQuery.addProcessor('diagonal', function (el, dimensions, computedStyle) {
-    var height = dims.height,
-        width = dims.width;
-    return Math.pow((height * height * width * width), 0.5);
-});
-elementQuery.addProcessor('aspect', function (el, dimensions, computedStyle) {
-    return dims.width / dims.height;
-});
-elementQuery.addProcessor('perimeter', function (el, dimensions, computedStyle) {
-    var height = dims.height,
-        width = dims.width;
-    return ((height * 2) + (width * 2));
-});
+// elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
+//     var parent = el.parentNode,
+//         parentDims = parent.getBoundingClientRect(),
+//         parentStyles = parent.getComputedStyle(),
+//         parentVal = proc.apply(this, [parent, parentDims, parentStyles]);
+//     return (val / parentVal);
+// });
+// elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedStyle) {
+//     return (val / parseFloat(computedStyle.fontSize));
+// });
+// elementQuery.addProcessor('area', function (el, dimensions, computedStyle) {
+//     return dims.height * dims.width;
+// });
+// elementQuery.addProcessor('diagonal', function (el, dimensions, computedStyle) {
+//     var height = dims.height,
+//         width = dims.width;
+//     return Math.pow((height * height * width * width), 0.5);
+// });
+// elementQuery.addProcessor('aspect', function (el, dimensions, computedStyle) {
+//     return dims.width / dims.height;
+// });
+// elementQuery.addProcessor('perimeter', function (el, dimensions, computedStyle) {
+//     var height = dims.height,
+//         width = dims.width;
+//     return ((height * 2) + (width * 2));
+// });

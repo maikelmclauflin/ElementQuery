@@ -1,9 +1,13 @@
 # ElementQuery
 A small api for creating css element queries. For when the media just isn't enough.
 
+## Processors
+
+Processors should be called before the window onload method so that they can be used to parse the available stylesheets. This is so that they can do not have to scan the available stylesheets multiple times with the help of the reinit method.
+
 ## Units
 
-listed below are examples of how to support percentage and em units. Arguments for the unit handlers are denoted in the following list
+Arguments for the unit handlers are denoted in the following list.
 
 0. context: the sensor instance object that is watching the element being resized.
 1. val: the value calculated from the original query. This values is common for all units on that element for the same query.
@@ -25,6 +29,8 @@ The system currently supports the following units:
 9. 'pc'
 10. 'pt'
 11. 'mm'
+
+Listed below are examples of how to support percentage and em units. These processors are commented out in the dev source code, but are there for your copying and pasting convenience.
 
 #### %
 ```javascript
