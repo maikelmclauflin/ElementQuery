@@ -418,7 +418,8 @@
 elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
     var parent = el.parentNode,
         parentDims = parent.getBoundingClientRect(),
-        parentVal = proc.apply(this, [parent, parentDims]);
+        parentStyles = parent.getComputedStyle(),
+        parentVal = proc.apply(this, [parent, parentDims, parentStyles]);
     return (val / parentVal);
 });
 elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedStyle) {

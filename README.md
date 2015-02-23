@@ -3,14 +3,21 @@ A small api for creating css element queries. For when the media just isn't enou
 
 ## Units
 
-listed below are examples of how to support percentage and em units
+listed below are examples of how to support percentage and em units. Arguments for the unit handlers are denoted in the following list
+
+1) val: the value calculated from the original query. This values is common for all units on that element for the same query.
+2) proc: the query handler that calculated the value of val. Useful for creating % based queries.
+3) el: the element that is being sensed by the sensor.
+4) dims: the cached dimensions of the element being resized by the sensor.
+5) computedStyle: the cached styles of the element being resized by the sensor.
 
 #### %
 ```javascript
 elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
     var parent = el.parentNode,
         parentDims = parent.getBoundingClientRect(),
-        parentVal = proc.apply(this, [parent, parentDims]);
+        parentStyles = parent.getComputedStyle(),
+        parentVal = proc.apply(this, [parent, parentDims, parentStyles]);
     return (val / parentVal);
 });
 ```
