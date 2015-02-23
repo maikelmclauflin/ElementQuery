@@ -7,7 +7,7 @@ listed below are examples of how to support percentage and em units. Arguments f
 
 0. context: the sensor instance object that is watching the element being resized.
 1. val: the value calculated from the original query. This values is common for all units on that element for the same query.
-2. proc: the query handler that calculated the value of val. Useful for creating % based queries.
+2. proc: the query handler that calculated the value of val. Useful for creating % based queries, such as the one shown below.
 3. el: the element that is being sensed by the sensor.
 4. dims: the cached dimensions of the element being resized by the sensor.
 5. computedStyle: the cached styles of the element being resized by the sensor.
@@ -78,7 +78,7 @@ method to calculate and force update all tracked element queries
 #### ElementQuery.attach(element, matchingAttributes);
 method generally called when scanning stylesheets. The first argument is the dom element that is being watched, and the second is an array of attribute strings that need to be watched. Units can be passed in, but if there are no processors to watch for them, they will be ignored until the ElementQuery instance is reinitialized Each attribute string generally follows this pattern:
 ```css
-[min-aspect~="3"]
+[min-diagonal~="300"]
 ```
 
 #### ElementQuery.reinit(stylesheets);
