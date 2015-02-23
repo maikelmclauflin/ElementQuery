@@ -12,6 +12,20 @@ listed below are examples of how to support percentage and em units. Arguments f
 4. dims: the cached dimensions of the element being resized by the sensor.
 5. computedStyle: the cached styles of the element being resized by the sensor.
 
+The system currently supports the following units:
+
+1. 'px'
+2. 'em'
+3. 'ex'
+4. 'in'
+5. 'cm'
+6. '%'
+7. 'vh'
+8. 'vw'
+9. 'pc'
+10. 'pt'
+11. 'mm'
+
 #### %
 ```javascript
 elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
@@ -92,6 +106,8 @@ method that iterates over the available styles and scans each selector for valid
 
 ## API Endpoints -- Sensor
 
+The Sensor factory makes objects that directly construct the resize watchers and monitor the elements themselves.
+
 #### Sensor.add(attributeString);
 method that is passed an attribute string to determine extend the sensor's watch functions. From this string a simple object is created and is then extended into the sensor using the extendWatcher method.
 
@@ -121,3 +137,9 @@ resets the scroll positions on the shrink and expand divs so that they can sense
 
 #### Sensor.update();
 method that initializes the recalculation of the resized div, as determined by scroll events hosted in the children of the targeted element. First the values are recalulated, then the correct attributes are added and removed to the targeted html elements.
+
+
+## Future Releases
+1. Ability to add custom units
+2. Ability to get resize sensor by passing html element
+3. Ability to add trailing functions that run after the element queries
