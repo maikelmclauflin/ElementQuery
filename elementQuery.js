@@ -169,11 +169,13 @@
     }
     Sensor.prototype = {
         update: function () {
-            var i, n, m, o, v, args, unit, units, query, attrKey, values, valuesLen, currentValue, baseAttr, doer, convertedValue, sensor = this,
+            var i, n, m, o, v, unitArgs, unit, units, query, attrKey, values, valuesLen, currentValue, baseAttr, doer, convertedValue, sensor = this,
                 el = sensor.el,
                 watchers = sensor.watchers,
-                activeAttrs = {};
-            sensor.dimensions = sensor.el.getBoundingClientRect();
+                activeAttrs = {},
+                elementStyles = win.getComputedStyle(el),
+                dimensions = sensor.el.getBoundingClientRect();
+            sensor.dimensions = dimensions;
             for (n in watchers) {
                 baseAttr = baseAttrs[n];
                 activeAttrs['min-' + n] = [];
@@ -182,18 +184,18 @@
                     queries = watchers[n];
                     doer = baseAttr.fn;
                     if (doer && typeof doer === 'function') {
-                        currentValue = doer.apply(sensor, [el, sensor.dimensions]);
+                        currentValue = doer.apply(sensor, [el, dimensions, elementStyles]);
+                        unitArgs = [currentValue, doer, el, dimensions, elementStyles];
                         for (v in queries) {
                             query = queries[v];
                             val = parseFloat(v);
-                            args = [currentValue, doer, el, sensor.dimensions];
                             for (o in query) {
                                 units = query[o];
                                 attrKey = o + '-' + n;
                                 for (i = 0; i < units.length; i++) {
                                     unit = units[i];
                                     // val, proc, sensor, el, dims
-                                    convertedValue = unitProcessors[unit].apply(sensor, args);
+                                    convertedValue = unitProcessors[unit].apply(sensor, unitArgs);
                                     if (val < convertedValue) {
                                         if (o === 'min') activeAttrs[attrKey].push(val + unit);
                                     }
@@ -413,27 +415,27 @@
     win.ElementQuery = ElementQuery;
     win.elementQuery = new win.ElementQuery();
 }(window, document));
-elementQuery.unitProcessor('%', function (val, proc, el, dims) {
+elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
     var parent = el.parentNode,
         parentDims = parent.getBoundingClientRect(),
         parentVal = proc.apply(this, [parent, parentDims]);
     return (val / parentVal);
 });
-elementQuery.unitProcessor('em', function (val, proc, el, dims) {
-    return val / parseFloat(el.style.fontSize);
+elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedStyle) {
+    return (val / parseFloat(el.style.fontSize));
 });
-elementQuery.addProcessor('area', function (el, dims) {
+elementQuery.addProcessor('area', function (el, dimensions, computedStyle) {
     return dims.height * dims.width;
 });
-elementQuery.addProcessor('diagonal', function (el, dims) {
+elementQuery.addProcessor('diagonal', function (el, dimensions, computedStyle) {
     var height = dims.height,
         width = dims.width;
     return Math.pow((height * height * width * width), 0.5);
 });
-elementQuery.addProcessor('aspect', function (el, dims) {
+elementQuery.addProcessor('aspect', function (el, dimensions, computedStyle) {
     return dims.width / dims.height;
 });
-elementQuery.addProcessor('perimeter', function (el, dims) {
+elementQuery.addProcessor('perimeter', function (el, dimensions, computedStyle) {
     var height = dims.height,
         width = dims.width;
     return ((height * 2) + (width * 2));

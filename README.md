@@ -1,6 +1,43 @@
 # ElementQuery
 A small api for creating css element queries. For when the media just isn't enough.
 
+## Units
+
+#### %
+```javascript
+elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
+    var parent = el.parentNode,
+        parentDims = parent.getBoundingClientRect(),
+        parentVal = proc.apply(this, [parent, parentDims]);
+    return (val / parentVal);
+});
+```
+
+#### em
+```javascript
+elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedStyle) {
+    return (val / parseFloat(el.style.fontSize));
+});
+```
+
+## Queries
+elementQuery.addProcessor('area', function (el, dimensions, computedStyle) {
+    return dims.height * dims.width;
+});
+elementQuery.addProcessor('diagonal', function (el, dimensions, computedStyle) {
+    var height = dims.height,
+        width = dims.width;
+    return Math.pow((height * height * width * width), 0.5);
+});
+elementQuery.addProcessor('aspect', function (el, dimensions, computedStyle) {
+    return dims.width / dims.height;
+});
+elementQuery.addProcessor('perimeter', function (el, dimensions, computedStyle) {
+    var height = dims.height,
+        width = dims.width;
+    return ((height * 2) + (width * 2));
+});
+
 ## API Endpoints -- ElementQuery
 
 #### ElementQuery.addProcessor(name, processor);
