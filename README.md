@@ -32,7 +32,7 @@ Arguments for the unit handlers are denoted in the following list, and the conte
 6. computedStyle: the cached styles of the element being resized by the sensor.
 7. dimensions: the cached dimensions of the element being resized by the sensor.
 
-The system currently supports the following units:
+The system currently supports the following unit handlers. If a handler is not found, or a bad unit is applied in css, then the system will fallback to using px values for the handler and final attribute:
 
 1. 'px'
 2. 'em'
