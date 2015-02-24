@@ -157,7 +157,7 @@ elementQuery.addProcessor('area', function (el, width, height) {
 });
 
 elementQuery.addProcessor('diagonal', function (el, width, height) {
-    return Math.pow((height * height * width * width), 0.5);
+    return Math.pow(((height * height) + (width * width)), 0.5);
 });
 
 elementQuery.addProcessor('aspect', function (el, width, height) {
