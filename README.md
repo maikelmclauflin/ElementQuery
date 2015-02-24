@@ -62,11 +62,11 @@ the following is a good example of how to make complex computations for a unit l
 ```javascript
 elementQuery.unitProcessor('%', function (val, proc, el) {
     var parent = el.parentNode,
-        parentDims = parent.getBoundingClientRect(),
-        parentStyles = parent.getComputedStyle(),
-        parentHeight = parseFloat(parentStyles.height),
-        parentWidth = parseFloat(parentStyles.width),
-        parentVal = proc.apply(this, [parent, parentWidth, parentHeight, parentDims, parentStyles]);
+        pDims = parent.getBoundingClientRect(),
+        pStyles = parent.getComputedStyle(),
+        pHeight = parseFloat(parentStyles.height),
+        pWidth = parseFloat(parentStyles.width),
+        pVal = proc.apply(this, [parent, pWidth, pHeight, pDims, pStyles]);
     return (val / parentVal);
 });
 ```
