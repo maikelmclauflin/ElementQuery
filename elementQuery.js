@@ -87,7 +87,7 @@
             return nuStr[2];
         },
         units = function (str, unitList) {
-            var i, ch, unit = [];
+            var i, ch, unitStr, unit = [];
             str = str.trim();
             for (i = str.length - 1; i >= 0; i--) {
                 unit.unshift(str[i]);
@@ -135,7 +135,7 @@
     }
     Sensor.prototype = {
         update: function () {
-            var i, n, m, o, v, unitArgs, valueArgs, unit, units, query, attrKey, values, valuesLen, currentValue, baseAttr, doer, convertedValue, sensor = this,
+            var i, n, m, o, v, unitArgs, valueArgs, unit, units, query, attrKey, values, valuesLen, currentValue, baseAttr, doer, convertedValue, queries, sensor = this,
                 el = sensor.el,
                 watchers = sensor.watchers,
                 activeAttrs = {},
@@ -212,12 +212,17 @@
             }
         },
         parseObject: function (str) {
-            var measurement, value, valueMesurement, unit, sensor = this,
+            var n, minMax, measurement, value,
+                valueMesurement, unit, unitList = [],
+                sensor = this,
                 original = {};
             measurement = original[objParseMeasurement(str)] = {};
             // array for units
             value = objParseValues(str);
-            unit = units(value);
+            for (n in unitProcessors) {
+                unitList.push(n);
+            }
+            unit = units(value, unitList);
             if (!unit) unit = '';
             valueMesurement = measurement[value] = {};
             if (objParseDims(str, 'min-')) minMax = 'min';
@@ -284,7 +289,7 @@
             return elQuery;
         },
         scanSelectors: function (regex, callback) {
-            var matchingStrings, allRules, elQuery = this;
+            var selector, matchingStrings, allRules, elQuery = this;
             each(elQuery.styles, function (sheet, index, sheets) {
                 if (typeof sheet === 'object') {
                     allRules = sheet.rules || sheet.cssRules;
@@ -382,6 +387,11 @@
                 regex: regexMaker(name, baseRegExp)
             };
             return elQuery;
+        },
+        physicalDistance: function (divisor) {
+            return function (val) {
+                return ((val / devicePixelRatio) / divisor);
+            };
         }
     };
     win.onload = function () {
@@ -403,12 +413,33 @@ elementQuery.unitProcessor('%', function (val, proc, el) {
 elementQuery.unitProcessor('em', function (val, proc, el, width, height, computedStyle, dimensions) {
     return (val / parseFloat(computedStyle.fontSize));
 });
-elementQuery.unitProcessor('rem', (function () {
-    var baseFont = window.getComputedStyle(document.documentElement).fontSize;
+elementQuery.unitProcessor('rem', (function (win, doc) {
+    var baseFont = parseFloat(win.getComputedStyle(doc.documentElement).fontSize);
     return function (val) {
         return (val / baseFont);
     };
-}()));
+}(window, document)));
+elementQuery.unitProcessor('in', elementQuery.physicalDistance(96));
+elementQuery.unitProcessor('cm', elementQuery.physicalDistance(37.79527559055118));
+elementQuery.unitProcessor('mm', elementQuery.physicalDistance(3.779527559055118));
+elementQuery.unitProcessor('pc', elementQuery.physicalDistance(16));
+elementQuery.unitProcessor('pt', elementQuery.physicalDistance(1.333333333333333));
+elementQuery.unitProcessor('vw', function (val) {
+    var width = window.innerWidth;
+    return (val / (width / 100));
+});
+elementQuery.unitProcessor('vh', function (val) {
+    var height = window.innerHeight;
+    return (val / (height / 100));
+});
+elementQuery.unitProcessor('vmax', function (val) {
+    var max = Math.max(window.innerHeight, window.innerWidth);
+    return (val / (max / 100));
+});
+elementQuery.unitProcessor('vmin', function (val) {
+    var min = Math.min(window.innerHeight, window.innerWidth);
+    return (val / (min / 100));
+});
 elementQuery.addProcessor('area', function (el, width, height, computedStyle, dimensions) {
     return height * width;
 });

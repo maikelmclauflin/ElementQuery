@@ -40,17 +40,17 @@ The system currently supports the following unit handlers. If a handler is not f
 2. em
 3. %
 4. rem
+5. in
+6. cm
+7. vh
+8. vw
+9. pc
+10. pt
+11. mm
 
 ###### units that still need processors
 
-5. in
-6. cm
-7. ex
-8. vh
-9. vw
-10. pc
-11. pt
-12. mm
+suggestions?
 
 
 Listed below are examples of how to support percentage and em units. These processors are commented out in the dev source code, but are there for your copying and pasting convenience.
