@@ -22,9 +22,8 @@ Processors should be called before the window onload method so that they can be 
 
 ### Unit Processor
 
-Arguments for the unit handlers are denoted in the following list.
+Arguments for the unit handlers are denoted in the following list, and the context is the sensor instance object that is watching the element being resized.
 
-context: the sensor instance object that is watching the element being resized.
 1. val: the value calculated from the original query. This values is common for all units on that element for the same query.
 2. proc: the query handler that calculated the value of val. Useful for creating % based queries, such as the one shown below.
 3. el: the element that is being sensed by the sensor.
