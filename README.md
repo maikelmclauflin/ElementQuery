@@ -193,6 +193,12 @@ method that updates the element query with new stylesheets. The argument is requ
 #### ElementQuery.unitProcessor(unitString, processor);
 method for adding different unit processors to the calculation chain. This is one of the last steps of the calulation before the value is decidedly put utilized or ignored by the current state of the element. That being said, it is recommended that the function used to process the current value to convert it to a new one be fast, since these functions are run once per css query, on every resize. The arguments that are applied to the processor function include: the current numerical value in the pipeline, the function that got the current value, the element being resized, and its cached computed style
 
+#### ElementQuery.physicalDistance(number);
+method for creating a physical distance callback. Used in the creation of physical distance unit processors.
+
+#### ElementQuery.getSensor(DOMElement);
+method for retrieving a sensor from the dom element that created it. If a sensor has not yet been made, then a new one is made for the element that was passed in.
+
 #### ElementQuery.update();
 method that iterates over the available styles and scans each selector for valid queries. If the method finds a valid query that is not being watched, either by editing the stylesheets or adding a new stylesheet to the document or simply on initial load, the method will collect the necessary information from the selector, find the element that is being targeted, and set up a sensor if it has not already done so.
 
