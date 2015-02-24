@@ -84,7 +84,7 @@ elementQuery.unitProcessor('em', function (val, proc, el, width, height, compute
 });
 ```
 
-#### rem
+##### rem
 
 the following is an example of the computation necessary to achieve rem units. In this case it was a good idea to cache the base font size, since it rarely if ever changes.
 
@@ -96,6 +96,8 @@ elementQuery.unitProcessor('rem', (function () {
     };
 }()));
 ```
+
+##### physical distances (in, cm, mm, pc, pt)
 
 the following functions show a variety of physical unit processors that are created by utilizing the physical unit api endpoint on the elementQuery instance. The numbers being passed to the method is the number that will convert the value that is passed in by the closure that is returned to a physical value, after the device pixel density has been taken into account.
 
@@ -109,10 +111,9 @@ elementQuery.unitProcessor('pt', elementQuery.physicalDistance(1.333333333333333
 
 ```
 
-The following unit processors are known as viewport units. Their names are fairly self explainatory.
+##### viewport units (vw, vh, vmin, vmax)
 
 ```javascript
-
 
 elementQuery.unitProcessor('vw', function (val) {
     var width = window.innerWidth;
