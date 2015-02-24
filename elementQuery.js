@@ -309,6 +309,7 @@
         },
         addRule: function (match, selector) {
             var i, maxedOut, targeted, attrMatcher, currentMatches, targetedMeasurement, currentSelector, matchingStrings, elQuery = this;
+            // revisit this function later
             currentSelector = selector.split(match)[0] + match.replace();
             targetedMeasurement = [];
             currentMatches = [];
@@ -340,7 +341,14 @@
         },
         // watch these els
         attach: function (el, matchers) {
-            var els, watchers, dataCache, elIndex, elQ = this,
+            var elQ = this;
+            sensor = elQ.getSensor(el);
+            sensor.add(matchers);
+            sensor.resetDimensions();
+            return elQ;
+        },
+        getSensor: function (el) {
+            var els, watchers, dataCache, idx, sensors, elQ = this,
                 stringVersion = el.toString();
             if (!elQ.watchers) elQ.watchers = {};
             watchers = elQ.watchers;
@@ -349,19 +357,14 @@
             if (!dataCache.els) dataCache.els = [];
             if (!dataCache.sensors) dataCache.sensors = [];
             els = dataCache.els;
-            elIndex = els.indexOf(el);
-            if (elIndex === -1) {
-                elIndex = els.length;
+            sensors = dataCache.sensors;
+            idx = els.indexOf(el);
+            if (idx === -1) {
+                idx = els.length;
                 els.push(el);
             }
-            if (!dataCache.sensors[elIndex]) {
-                // window.console.log(dataCache.sensors[elIndex]);
-                dataCache.sensors[elIndex] = new Sensor(el);
-            }
-            sensor = dataCache.sensors[elIndex];
-            sensor.add(matchers);
-            sensor.resetDimensions();
-            return elQ;
+            if (!sensors[idx]) sensors[idx] = new Sensor(el);
+            return sensors[idx];
         },
         applySensorValues: function () {
             var n, m, dataCaches, dataCache, elQ = this,
