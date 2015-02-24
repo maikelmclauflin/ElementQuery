@@ -86,10 +86,8 @@
             var nuStr = str.match(/\=(\"|\')(.*)(\"|\')/);
             return nuStr[2];
         },
-        units = function (str) {
-            var i, ch, unit = [],
-                // todo change this to reflect valid unit lists
-                unitList = ['px', 'em', 'ex', 'in', 'cm', '%', 'vh', 'vw', 'pc', 'pt', 'mm'];
+        units = function (str, unitList) {
+            var i, ch, unit = [];
             str = str.trim();
             for (i = str.length - 1; i >= 0; i--) {
                 unit.unshift(str[i]);
