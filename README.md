@@ -3,7 +3,10 @@ With support for most units (px, em, %, rem, in, cm, vh, vw, pc, pt, mm) and the
 
 In the following example there are 4 main parts:
 ```css
-[min-{{propery}}~="{{value}}{{unit}}"]
+[{{min / max}}-{{propery}}~="{{value}}{{unit}}"]
+
+[min-width~="40em"]
+
 ```
 
 In order of computation, first there is a type, or query type which is usually interchangable for other numerical representitive variables such as width, aspect ratio, or area.
