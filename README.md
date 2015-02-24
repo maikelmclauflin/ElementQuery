@@ -1,5 +1,5 @@
 # ElementQuery
-With support for most units (px, em, %, rem, in, cm, vh, vw, pc, pt, mm) and the ability to custom roll your own, this plugin is highly extensible. Listen for area changes, height, width, aspect ratio, diagonal, perimiter, and any other changes that you can imagine by adding custom processors to the global instance.
+With support for most units (px, em, %, rem, in, cm, vh, vw, pc, pt, mm) and the ability to custom roll your own, this plugin is highly extensible. Listen for area changes, height, width, aspect ratio, diagonal, perimiter, and any other changes that you can imagine by adding custom processors to the global instance. Weighing in at only 5kb minified, this plugin acts like more of an extension of your browsers on computational capabilities.
 
 In the following example there are 4 main parts:
 ```css
