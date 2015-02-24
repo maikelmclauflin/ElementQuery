@@ -206,17 +206,23 @@ method that iterates over the available styles and scans each selector for valid
 
 The Sensor factory makes objects that directly construct the resize watchers and monitor the elements themselves.
 
+#### Sensor.update();
+reads the element attached to the sensor in the first step and caches values to update the ui in a second step.
+
+#### Sensor.calculateValues(type, value);
+method to calculate theoretical values of the element attributes being queried. This method handles unit conversion from the value calculated by the query handlers. Returns undefined if no queries are available for that type. Returns object of min and max values to be applied if the value passed in is on the right side of the min / max values in the correct units.
+
 #### Sensor.add(attributeString);
 method that is passed an attribute string to determine extend the sensor's watch functions. From this string a simple object is created and is then extended into the sensor using the extendWatcher method.
 
 #### Sensor.extendWatcher(extendObject);
 extends the watch parameters and breakpoints of the sensor. Takes one argument in the following format:
-```javascript
+```JSON
 {
-    attribute: {
-        numberLimit: {
-            min: [units],
-            max: ['', '%', 'em']
+    "attribute": {
+        "numberLimit": {
+            "min": [units],
+            "max": ['', '%', 'em']
         }
     }
 }

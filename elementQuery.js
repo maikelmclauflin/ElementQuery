@@ -113,7 +113,6 @@
             var resizeHandler;
             window.console.log(sensor);
             resizeHandler = function () {
-                sensor.update();
                 win.requestAnimationFrame(resizeHandler);
             }.bind(sensor);
             win.requestAnimationFrame(resizeHandler);
@@ -147,7 +146,7 @@
             }
         },
         update: function () {
-            var n, name, base, formerVal, newVal, sensor = this,
+            var n, name, base, formerVal, newVal, updatedAtts, sensor = this,
                 watchers = sensor.watchers,
                 formerVals = sensor.formerVals,
                 el = sensor.el,
@@ -173,48 +172,51 @@
             }
             for (n = 0; n < updateThese.length; n++) {
                 sensor.updateUI(updateThese[n]);
+                updatedAtts = 1;
+            }
+            if (updatedAtts) {
+                sensor.runAnnexes();
             }
         },
-        calculateValues: function (type, val) {
-            var i, n, m, o, v, unitArgs, valueArgs, unit, units, query, attrKey, values, valuesLen, currentValue, baseAttr, doer, convertedValue, queries, activeAttrs, sensor = this,
+        calculateValues: function (type, currentValue) {
+            var i, n, m, o, v, unitArgs, unit, units, query, attrKey, values, valuesLen, baseAttr, doer, convertedValue, queries, activeAttrs, sensor = this,
                 el = sensor.el,
                 watchers = sensor.watchers,
                 elementStyles = sensor.latestStyles,
                 dimensions = sensor.latestClientRect,
                 elHeight = sensor.latestHeight,
                 elWidth = sensor.latestWidth;
-            queries = watchers[type];
             baseAttr = baseAttrs[type];
             if (baseAttr.fn) {
+                queries = watchers[type];
                 doer = baseAttr.fn;
-                if (doer && typeof doer === 'function') {
-                    activeAttrs = {
-                        min: [],
-                        max: []
-                    };
-                    valueArgs = [el, elWidth, elHeight, elementStyles, dimensions];
-                    currentValue = doer.apply(sensor, valueArgs);
-                    unitArgs = [currentValue, doer].concat(valueArgs);
-                    for (v in queries) {
-                        query = queries[v];
-                        val = parseFloat(v);
-                        for (o in query) {
-                            units = query[o];
-                            for (i = 0; i < units.length; i++) {
-                                unit = units[i];
-                                // val, proc, sensor, el, dims
-                                convertedValue = unitProcessors[unit].apply(sensor, unitArgs);
-                                if (val < convertedValue) {
-                                    if (o === 'min') activeAttrs[o].push(val + unit);
-                                }
-                                if (val > convertedValue) {
-                                    if (o === 'max') activeAttrs[o].push(val + unit);
-                                }
+                // if (doer && typeof doer === 'function') {
+                activeAttrs = {
+                    min: [],
+                    max: []
+                };
+                // currentValue = doer.apply(sensor, valueArgs);
+                unitArgs = [currentValue, doer, el, elWidth, elHeight, elementStyles, dimensions];
+                for (v in queries) {
+                    query = queries[v];
+                    val = parseFloat(v);
+                    for (o in query) {
+                        units = query[o];
+                        for (i = 0; i < units.length; i++) {
+                            unit = units[i];
+                            // val, proc, sensor, el, dims
+                            convertedValue = unitProcessors[unit].apply(sensor, unitArgs);
+                            if (val < convertedValue) {
+                                if (o === 'min') activeAttrs[o].push(val + unit);
+                            }
+                            if (val > convertedValue) {
+                                if (o === 'max') activeAttrs[o].push(val + unit);
                             }
                         }
                     }
-                    return activeAttrs;
                 }
+                return activeAttrs;
+                // }
             }
         },
         hasWatcher: function (obj) {
@@ -441,56 +443,56 @@
     };
     win.ElementQuery = ElementQuery;
     win.elementQuery = new win.ElementQuery();
-    // elementQuery.unitProcessor('%', function (val, proc, el) {
-    //     var parent = el.parentNode,
-    //         pDims = parent.getBoundingClientRect(),
-    //         pStyles = parent.getComputedStyle(),
-    //         pHeight = parseFloat(parentStyles.height),
-    //         pWidth = parseFloat(parentStyles.width),
-    //         pVal = proc.apply(this, [parent, pWidth, pHeight, pDims, pStyles]);
-    //     return (val / parentVal);
-    // });
-    // elementQuery.unitProcessor('em', function (val, proc, el, width, height, computedStyle, dimensions) {
-    //     return (val / parseFloat(computedStyle.fontSize));
-    // });
-    // elementQuery.unitProcessor('rem', (function (win, doc) {
-    //     var baseFont = parseFloat(win.getComputedStyle(doc.documentElement).fontSize);
-    //     return function (val) {
-    //         return (val / baseFont);
-    //     };
-    // }(window, document)));
-    // elementQuery.unitProcessor('in', elementQuery.physicalDistance(96));
-    // elementQuery.unitProcessor('cm', elementQuery.physicalDistance(37.79527559055118));
-    // elementQuery.unitProcessor('mm', elementQuery.physicalDistance(3.779527559055118));
-    // elementQuery.unitProcessor('pc', elementQuery.physicalDistance(16));
-    // elementQuery.unitProcessor('pt', elementQuery.physicalDistance(1.333333333333333));
-    // elementQuery.unitProcessor('vw', function (val) {
-    //     var width = window.innerWidth;
-    //     return (val / (width / 100));
-    // });
-    // elementQuery.unitProcessor('vh', function (val) {
-    //     var height = window.innerHeight;
-    //     return (val / (height / 100));
-    // });
-    // elementQuery.unitProcessor('vmax', function (val) {
-    //     var max = Math.max(window.innerHeight, window.innerWidth);
-    //     return (val / (max / 100));
-    // });
-    // elementQuery.unitProcessor('vmin', function (val) {
-    //     var min = Math.min(window.innerHeight, window.innerWidth);
-    //     return (val / (min / 100));
-    // });
-    // elementQuery.addProcessor('area', function (el, width, height, computedStyle, dimensions) {
-    //     return height * width;
-    // });
-    // elementQuery.addProcessor('diagonal', function (el, width, height, computedStyle, dimensions) {
-    //     return Math.pow(((height * height) + (width * width)), 0.5);
-    // });
-    // elementQuery.addProcessor('aspect', function (el, width, height, computedStyle, dimensions) {
-    //     return width / height;
-    // });
-    // elementQuery.addProcessor('perimeter', function (el, width, height, computedStyle, dimensions) {
-    //     return ((height * 2) + (width * 2));
-    // });
+    elementQuery.unitProcessor('%', function (val, proc, el) {
+        var parent = el.parentNode,
+            pDims = parent.getBoundingClientRect(),
+            pStyles = parent.getComputedStyle(),
+            pHeight = parseFloat(parentStyles.height),
+            pWidth = parseFloat(parentStyles.width),
+            pVal = proc.apply(this, [parent, pWidth, pHeight, pDims, pStyles]);
+        return (val / parentVal);
+    });
+    elementQuery.unitProcessor('em', function (val, proc, el, width, height, computedStyle, dimensions) {
+        return (val / parseFloat(computedStyle.fontSize));
+    });
+    elementQuery.unitProcessor('rem', (function (win, doc) {
+        var baseFont = parseFloat(win.getComputedStyle(doc.documentElement).fontSize);
+        return function (val) {
+            return (val / baseFont);
+        };
+    }(window, document)));
+    elementQuery.unitProcessor('in', elementQuery.physicalDistance(96));
+    elementQuery.unitProcessor('cm', elementQuery.physicalDistance(37.79527559055118));
+    elementQuery.unitProcessor('mm', elementQuery.physicalDistance(3.779527559055118));
+    elementQuery.unitProcessor('pc', elementQuery.physicalDistance(16));
+    elementQuery.unitProcessor('pt', elementQuery.physicalDistance(1.333333333333333));
+    elementQuery.unitProcessor('vw', function (val) {
+        var width = window.innerWidth;
+        return (val / (width / 100));
+    });
+    elementQuery.unitProcessor('vh', function (val) {
+        var height = window.innerHeight;
+        return (val / (height / 100));
+    });
+    elementQuery.unitProcessor('vmax', function (val) {
+        var max = Math.max(window.innerHeight, window.innerWidth);
+        return (val / (max / 100));
+    });
+    elementQuery.unitProcessor('vmin', function (val) {
+        var min = Math.min(window.innerHeight, window.innerWidth);
+        return (val / (min / 100));
+    });
+    elementQuery.addProcessor('area', function (el, width, height, computedStyle, dimensions) {
+        return height * width;
+    });
+    elementQuery.addProcessor('diagonal', function (el, width, height, computedStyle, dimensions) {
+        return Math.pow(((height * height) + (width * width)), 0.5);
+    });
+    elementQuery.addProcessor('aspect', function (el, width, height, computedStyle, dimensions) {
+        return width / height;
+    });
+    elementQuery.addProcessor('perimeter', function (el, width, height, computedStyle, dimensions) {
+        return ((height * 2) + (width * 2));
+    });
     win.elementQuery.reinit(doc.styleSheets);
 }(window, document));
