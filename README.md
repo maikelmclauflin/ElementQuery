@@ -1,5 +1,5 @@
 # ElementQuery
-A small api for creating css element queries. When the media just isn't enough.
+With support for most units (px, em, %, rem, in, cm, vh, vw, pc, pt, mm) and the ability to custom roll your own, this plugin is highly extensible. Listen for area changes, height, width, aspect ratio, diagonal, perimiter, and any other changes that you can imagine by adding custom processors to the global instance.
 
 In the following example there are 4 main parts:
 ```css
