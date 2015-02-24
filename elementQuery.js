@@ -55,6 +55,8 @@
             return {
                 el: el,
                 watchers: {},
+                formerVals: {},
+                currentValidQueries: {},
                 annexes: []
             };
         },
@@ -109,18 +111,12 @@
         },
         attachResizeHandlers = function (sensor) {
             var resizeHandler;
+            window.console.log(sensor);
             resizeHandler = function () {
-                var sensor = this,
-                    diffHeight = (sensor.el.offsetHeight !== sensor.lastHeight),
-                    diffWidth = (sensor.el.offsetWidth !== sensor.lastWidth);
-                if (diffHeight || diffWidth) {
-                    sensor.update();
-                    sensor.runAnnexes();
-                    sensor.resetDimensions();
-                }
-                window.requestAnimationFrame(resizeHandler);
+                sensor.update();
+                win.requestAnimationFrame(resizeHandler);
             }.bind(sensor);
-            window.requestAnimationFrame(resizeHandler);
+            win.requestAnimationFrame(resizeHandler);
         },
         baseRegExp = /,?([^,\n]*)\[[\s\t]*(min|max)-({{{}}})[\s\t]*[~$\^]?=[\s\t]*(["|'](.*)["|'])[\s\t]*]([^\n\s\{]*)/,
         attrRegExp = /\,?([[\s\t]*(min|max)-({{{}}})[\s\t]*[~$\^]?=[\s\t]*(["|'](.+?)["|'])[\s\t]*])/;
@@ -136,60 +132,90 @@
         return sensor;
     }
     Sensor.prototype = {
+        updateUI: function (type) {
+            var n, currentAttrVals, sensor = this,
+                values = sensor.currentValidQueries[type],
+                el = sensor.el;
+            for (n in values) {
+                attrName = n + '-' + type;
+                currentAttrVals = values[n];
+                if (currentAttrVals) {
+                    valuesLen = currentAttrVals.length;
+                    if (valuesLen) el.setAttribute(attrName, currentAttrVals.join(' '));
+                    if (!valuesLen) el.removeAttribute(attrName);
+                }
+            }
+        },
         update: function () {
-            var i, n, m, o, v, unitArgs, valueArgs, unit, units, query, attrKey, values, valuesLen, currentValue, baseAttr, doer, convertedValue, queries, sensor = this,
+            var n, name, base, formerVal, newVal, sensor = this,
+                watchers = sensor.watchers,
+                formerVals = sensor.formerVals,
+                el = sensor.el,
+                elementStyles = win.getComputedStyle(el),
+                dimensions = el.getBoundingClientRect(),
+                elHeight = parseFloat(dimensions.height),
+                elWidth = parseFloat(dimensions.width),
+                baseArgs = [el, elWidth, elHeight, elementStyles, dimensions],
+                updateThese = [];
+            sensor.latestStyles = elementStyles;
+            sensor.latestClientRect = dimensions;
+            sensor.latestHeight = elHeight;
+            sensor.latestWidth = elWidth;
+            for (n in watchers) {
+                base = baseAttrs[n];
+                formerVal = formerVals[n];
+                newVal = base.fn.apply(sensor, baseArgs);
+                if (newVal !== formerVal) {
+                    formerVals[n] = newVal;
+                    updateThese.push(n);
+                    sensor.currentValidQueries[n] = sensor.calculateValues(n, newVal);
+                }
+            }
+            for (n = 0; n < updateThese.length; n++) {
+                sensor.updateUI(updateThese[n]);
+            }
+        },
+        calculateValues: function (type, val) {
+            var i, n, m, o, v, unitArgs, valueArgs, unit, units, query, attrKey, values, valuesLen, currentValue, baseAttr, doer, convertedValue, queries, activeAttrs, sensor = this,
                 el = sensor.el,
                 watchers = sensor.watchers,
-                activeAttrs = {},
-                elementStyles = win.getComputedStyle(el),
-                dimensions = sensor.el.getBoundingClientRect(),
-                elHeight = parseFloat(dimensions.height),
-                elWidth = parseFloat(dimensions.width);
-            sensor.dimensions = dimensions;
-            for (n in watchers) {
-                baseAttr = baseAttrs[n];
-                activeAttrs['min-' + n] = [];
-                activeAttrs['max-' + n] = [];
-                if (baseAttr) {
-                    queries = watchers[n];
-                    doer = baseAttr.fn;
-                    if (doer && typeof doer === 'function') {
-                        valueArgs = [el, elWidth, elHeight, elementStyles, dimensions];
-                        currentValue = doer.apply(sensor, valueArgs);
-                        unitArgs = [currentValue, doer].concat(valueArgs);
-                        for (v in queries) {
-                            query = queries[v];
-                            val = parseFloat(v);
-                            for (o in query) {
-                                units = query[o];
-                                attrKey = o + '-' + n;
-                                for (i = 0; i < units.length; i++) {
-                                    unit = units[i];
-                                    // val, proc, sensor, el, dims
-                                    convertedValue = unitProcessors[unit].apply(sensor, unitArgs);
-                                    if (val < convertedValue) {
-                                        if (o === 'min') activeAttrs[attrKey].push(val + unit);
-                                    }
-                                    if (val > convertedValue) {
-                                        if (o === 'max') activeAttrs[attrKey].push(val + unit);
-                                    }
+                elementStyles = sensor.latestStyles,
+                dimensions = sensor.latestClientRect,
+                elHeight = sensor.latestHeight,
+                elWidth = sensor.latestWidth;
+            queries = watchers[type];
+            baseAttr = baseAttrs[type];
+            if (baseAttr.fn) {
+                doer = baseAttr.fn;
+                if (doer && typeof doer === 'function') {
+                    activeAttrs = {
+                        min: [],
+                        max: []
+                    };
+                    valueArgs = [el, elWidth, elHeight, elementStyles, dimensions];
+                    currentValue = doer.apply(sensor, valueArgs);
+                    unitArgs = [currentValue, doer].concat(valueArgs);
+                    for (v in queries) {
+                        query = queries[v];
+                        val = parseFloat(v);
+                        for (o in query) {
+                            units = query[o];
+                            for (i = 0; i < units.length; i++) {
+                                unit = units[i];
+                                // val, proc, sensor, el, dims
+                                convertedValue = unitProcessors[unit].apply(sensor, unitArgs);
+                                if (val < convertedValue) {
+                                    if (o === 'min') activeAttrs[o].push(val + unit);
+                                }
+                                if (val > convertedValue) {
+                                    if (o === 'max') activeAttrs[o].push(val + unit);
                                 }
                             }
                         }
                     }
+                    return activeAttrs;
                 }
             }
-            for (n in activeAttrs) {
-                values = activeAttrs[n];
-                valuesLen = values.length;
-                if (valuesLen) el.setAttribute(n, activeAttrs[n].join(' '));
-                if (!valuesLen) el.removeAttribute(n);
-            }
-        },
-        resetDimensions: function () {
-            var sensor = this;
-            sensor.lastWidth = sensor.el.offsetWidth;
-            sensor.lastHeight = sensor.el.offsetHeight;
         },
         hasWatcher: function (obj) {
             var n, m, v, sensor = this,
@@ -214,11 +240,12 @@
             }
         },
         parseObject: function (str) {
-            var n, minMax, measurement, value,
+            var n, minMax, value,
                 valueMesurement, unit, unitList = [],
                 sensor = this,
-                original = {};
-            measurement = original[objParseMeasurement(str)] = {};
+                original = {},
+                objectParsed = objParseMeasurement(str),
+                measurement = original[objectParsed] = {};
             // array for units
             value = objParseValues(str);
             for (n in unitProcessors) {
@@ -237,6 +264,7 @@
                 watchers = sensor.watchers;
             for (n in obj) {
                 if (!watchers[n]) watchers[n] = {};
+                if (!sensor.formerVals[n]) sensor.formerVals[n] = NaN;
                 watchers = watchers[n];
                 for (m in obj[n]) {
                     if (!watchers[m]) watchers[m] = {};
@@ -354,7 +382,7 @@
             var elQ = this;
             sensor = elQ.getSensor(el);
             sensor.add(matchers);
-            sensor.resetDimensions();
+            // sensor.resetDimensions();
             return elQ;
         },
         getSensor: function (el) {
@@ -408,7 +436,7 @@
         }
     };
     win.onload = function () {
-        elementQuery.reinit(doc.styleSheets);
+        elementQuery.reinit();
         elementQuery.applySensorValues();
     };
     win.ElementQuery = ElementQuery;
