@@ -456,7 +456,7 @@
         return height * width;
     });
     elementQuery.addProcessor('diagonal', function (el, width, height, computedStyle, dimensions) {
-        return Math.pow((height * height * width * width), 0.5);
+        return Math.pow(((height * height) + (width * width)), 0.5);
     });
     elementQuery.addProcessor('aspect', function (el, width, height, computedStyle, dimensions) {
         return width / height;
