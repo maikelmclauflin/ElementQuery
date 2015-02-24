@@ -404,7 +404,8 @@ elementQuery.unitProcessor('%', function (val, proc, el, width, height, computed
 });
 elementQuery.unitProcessor('em', function (val, proc, el, width, height, computedStyle, dimensions) {
     return (val / parseFloat(computedStyle.fontSize));
-});elementQuery.unitProcessor('rem', (function () {
+});
+elementQuery.unitProcessor('rem', (function () {
     var baseFont = window.getComputedStyle(document.documentElement).fontSize;
     return function (val) {
         return (val / baseFont);
