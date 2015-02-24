@@ -9,7 +9,7 @@ In the following example there are 4 main parts:
 
 ```
 
-In order of computation, first there is a type, or query type which is usually interchangable for other numerical representitive variables such as width, aspect ratio, or area.
+In order of computation, first there is a property, or query type which is usually interchangable for other numerical representitive variables such as width, aspect ratio, or area.
 
 The second main part of this example is the actual value of the query. In this case, the value is 40.
 
