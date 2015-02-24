@@ -36,21 +36,21 @@ The system currently supports the following unit handlers. If a handler is not f
 
 ###### units with basic processors
 
-1. 'px'
-2. 'em'
-3. '%'
-4. 'rem'
+1. px
+2. em
+3. %
+4. rem
 
 ###### units that still need processors
 
-5. 'in'
-6. 'cm'
-7. 'ex'
-8. 'vh'
-9. 'vw'
-10. 'pc'
-11. 'pt'
-12. 'mm'
+5. in
+6. cm
+7. ex
+8. vh
+9. vw
+10. pc
+11. pt
+12. mm
 
 
 Listed below are examples of how to support percentage and em units. These processors are commented out in the dev source code, but are there for your copying and pasting convenience.
