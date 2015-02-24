@@ -1,6 +1,21 @@
 # ElementQuery
 A small api for creating css element queries. When the media just isn't enough.
 
+In the following example there are 4 main parts:
+```css
+[min-width~="40em"]
+```
+
+In order of computation, first there is a type, or query type which is usually interchangable for other numerical representitive variables such as width, aspect ratio, or area.
+
+The second main part of this example is the actual value of the query. In this case, the value is 40.
+
+Next is the unit, the whats of the value. In this case we have 40 whats? 40 ems. So we use our processor for ems to convert from pixels and we're good to go.
+
+Finally we have the min or max values that are prepended to the query. These determine, just like media queries, if the attribute will be applied or ignored / removed.
+
+This is the basic breakdown and functionality that this extension uses to compute and apply it's attributes.
+
 ## Processors
 
 Processors should be called before the window onload method so that they can be used to parse the available stylesheets. This is so that they can do not have to scan the available stylesheets multiple times with the help of the reinit method.
@@ -9,12 +24,14 @@ Processors should be called before the window onload method so that they can be 
 
 Arguments for the unit handlers are denoted in the following list.
 
-0. context: the sensor instance object that is watching the element being resized.
+context: the sensor instance object that is watching the element being resized.
 1. val: the value calculated from the original query. This values is common for all units on that element for the same query.
 2. proc: the query handler that calculated the value of val. Useful for creating % based queries, such as the one shown below.
 3. el: the element that is being sensed by the sensor.
-4. dims: the cached dimensions of the element being resized by the sensor.
-5. computedStyle: the cached styles of the element being resized by the sensor.
+4. width: the element's cached width
+4. height: the element's cached height
+6. computedStyle: the cached styles of the element being resized by the sensor.
+7. dimensions: the cached dimensions of the element being resized by the sensor.
 
 The system currently supports the following units:
 
@@ -33,19 +50,27 @@ The system currently supports the following units:
 Listed below are examples of how to support percentage and em units. These processors are commented out in the dev source code, but are there for your copying and pasting convenience.
 
 ##### %
+
+the following is a good example of how to make complex computations for a unit like percentages. it is a good idea to pass all of the necessary arguments so the query handler can compute, no matter what type of function it is running.
+
 ```javascript
-elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
+elementQuery.unitProcessor('%', function (val, proc, el) {
     var parent = el.parentNode,
         parentDims = parent.getBoundingClientRect(),
         parentStyles = parent.getComputedStyle(),
-        parentVal = proc.apply(this, [parent, parentDims, parentStyles]);
+        parentHeight = parseFloat(parentStyles.height),
+        parentWidth = parseFloat(parentStyles.width),
+        parentVal = proc.apply(this, [parent, parentWidth, parentHeight, parentDims, parentStyles]);
     return (val / parentVal);
 });
 ```
 
 ##### em
+
+the following is an example of a computation of em units, where the font size of the element will determine the final value that was calculated by the query processor.
+
 ```javascript
-elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedStyle) {
+elementQuery.unitProcessor('em', function (val, proc, el, width, height, computedStyle) {
     return (val / parseFloat(computedStyle.fontSize));
 });
 ```
@@ -63,25 +88,27 @@ While the context of the handlers when they are run is the sensor object that th
 below are some examples of different queries that you can run on elements you are watching.
 
 ```javascript
-elementQuery.addProcessor('area', function (el, dimensions, computedStyle) {
-    return dims.height * dims.width;
+
+elementQuery.unitProcessor('em', function (val, proc, el, width, height) {
+    return (val / parseFloat(computedStyle.fontSize));
 });
 
-elementQuery.addProcessor('diagonal', function (el, dimensions, computedStyle) {
-    var height = dims.height,
-        width = dims.width;
+elementQuery.addProcessor('area', function (el, width, height) {
+    return height * width;
+});
+
+elementQuery.addProcessor('diagonal', function (el, width, height) {
     return Math.pow((height * height * width * width), 0.5);
 });
 
-elementQuery.addProcessor('aspect', function (el, dimensions, computedStyle) {
-    return dims.width / dims.height;
+elementQuery.addProcessor('aspect', function (el, width, height) {
+    return width / height;
 });
 
-elementQuery.addProcessor('perimeter', function (el, dimensions, computedStyle) {
-    var height = dims.height,
-        width = dims.width;
+elementQuery.addProcessor('perimeter', function (el, width, height) {
     return ((height * 2) + (width * 2));
 });
+
 ```
 
 ## API Endpoints -- ElementQuery

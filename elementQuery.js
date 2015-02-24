@@ -4,15 +4,18 @@
         each = function (objects, callback, ctx) {
             var i, isArr;
             if (callback) {
-                if (hasOwnProp.apply(objects, ['length'])) isArr = 1;
-                if (isArr) {
-                    for (i = 0; i < objects.length; i++) {
-                        callback.apply(ctx, [objects[i], i, objects]);
+                if (objects) {
+                    if (!ctx) ctx = win;
+                    if (hasOwnProp.apply(objects, ['length'])) isArr = 1;
+                    if (isArr) {
+                        for (i = 0; i < objects.length; i++) {
+                            callback.apply(ctx, [objects[i], i, objects]);
+                        }
                     }
-                }
-                if (!isArr) {
-                    for (i in objects) {
-                        callback.apply(ctx, [objects[i], i, objects]);
+                    if (!isArr) {
+                        for (i in objects) {
+                            callback.apply(ctx, [objects[i], i, objects]);
+                        }
                     }
                 }
             }
@@ -49,47 +52,20 @@
             top: 0
         },
         makeDefaults = function (el) {
-            var i, n, elPosition, internal, overflower,
-                resizeSensorContainer = makeContainer(defaultCSS);
-            resizeSensorContainer.classList.add('resize-sensor');
-            internalExpander = makeContainer(defaultCSS);
-            internalExpanderChild = makeContainer(deepInternalCss);
-            internalExpander.appendChild(internalExpanderChild);
-            internalShrinker = makeContainer(defaultCSS);
-            internalShrinkerChild = makeContainer(deepInternalCss);
-            css(internalShrinkerChild, {
-                height: '200%',
-                width: '200%'
-            });
-            internalShrinker.appendChild(internalShrinkerChild);
-            internalExpander.classList.add('resize-sensor-expander');
-            internalShrinker.classList.add('resize-sensor-shrinker');
-            resizeSensorContainer.appendChild(internalExpander);
-            resizeSensorContainer.appendChild(internalShrinker);
-            el.appendChild(resizeSensorContainer);
-            elPosition = el.style.position;
-            if (!elPosition || elPosition === 'static') {
-                el.style.position = 'relative';
-            }
             return {
                 el: el,
-                sensor: resizeSensorContainer,
-                shrinker: internalShrinker,
-                shrinkerChild: internalShrinkerChild,
-                expander: internalExpander,
-                expanderChild: internalExpanderChild,
                 watchers: {}
             };
         },
         baseAttrs = {
             height: {
-                fn: function (el, dims) {
-                    return dims.height;
+                fn: function (el, dims, computedStyle) {
+                    return parseFloat(computedStyle.height);
                 }
             },
             width: {
-                fn: function (el, dims) {
-                    return dims.width;
+                fn: function (el, dims, computedStyle) {
+                    return parseFloat(computedStyle.width);
                 }
             }
         },
@@ -107,7 +83,7 @@
             return nuStr.slice(1, nuStr.length - 1);
         },
         objParseValues = function (str) {
-            var nuStr = str.match(/\=(\"|\')(.*)\"|\'/);
+            var nuStr = str.match(/\=(\"|\')(.*)(\"|\')/);
             return nuStr[2];
         },
         units = function (str) {
@@ -132,28 +108,22 @@
                 converted = replaceRegExp(baseRegStr.slice(1, baseRegStr.length - 1), '{{{}}}', attr);
             return new RegExp(converted, 'mgi');
         },
-        attachScrollHandlers = function (sensor) {
-            var el = sensor.sensor,
-                handler = function (sensor, determinant) {
-                    return function (e) {
-                        var el = this;
-                        e.preventDefault();
-                        e.stopImmediatePropagation();
-                        if (determinant.apply(this, [sensor, this])) {
-                            sensor.update();
-                            sensor.resetScroller();
-                        }
-                    };
-                };
-            el.children[0].addEventListener('scroll', handler(sensor, function (sensor, el) {
-                return (el.offsetHeight > sensor.lastHeight || el.offsetWidth > sensor.lastWidth);
-            }), true);
-            el.children[1].addEventListener('scroll', handler(sensor, function (sensor, el) {
-                return (el.offsetHeight < sensor.lastHeight || el.offsetWidth < sensor.lastWidth);
-            }), true);
+        attachResizeHandlers = function (sensor) {
+            var resizeHandler;
+            resizeHandler = function () {
+                var sensor = this,
+                    diffHeight = (sensor.el.offsetHeight !== sensor.lastHeight),
+                    diffWidth = (sensor.el.offsetWidth !== sensor.lastWidth);
+                if (diffHeight || diffWidth) {
+                    sensor.update();
+                    sensor.resetScroller(sensor);
+                }
+                window.requestAnimationFrame(resizeHandler);
+            }.bind(sensor);
+            window.requestAnimationFrame(resizeHandler);
         },
-        baseRegExp = /,?([^,\s]*)\[[\s\t]*(min|max)-({{{}}})[\s\t]*[~$\^]?=[\s\t]*"([^"]*)"[\s\t]*]([^\n\s\{]*)/,
-        attrRegExp = /\[[\s\t]*(min|max)-({{{}}})[\s\t]*[~$\^]?=[\s\t]*"([^"]*)"[\s\t]*]/;
+        baseRegExp = /,?([^,\n]*)\[[\s\t]*(min|max)-({{{}}})[\s\t]*[~$\^]?=[\s\t]*(["|'](.*)["|'])[\s\t]*]([^\n\s\{]*)/,
+        attrRegExp = /\,?([[\s\t]*(min|max)-({{{}}})[\s\t]*[~$\^]?=[\s\t]*(["|'](.+?)["|'])[\s\t]*])/;
     unitProcessors[''] = unitProcessors.px;
 
     function Sensor(el) {
@@ -162,19 +132,21 @@
         for (n in defaults) {
             sensor[n] = defaults[n];
         }
-        sensor.lastHeight = el.offsetHeight;
-        sensor.lastWidth = el.offsetWidth;
-        attachScrollHandlers(sensor);
+        // sensor.lastHeight = el.offsetHeight;
+        // sensor.lastWidth = el.offsetWidth;
+        attachResizeHandlers(sensor);
         return sensor;
     }
     Sensor.prototype = {
         update: function () {
-            var i, n, m, o, v, unitArgs, unit, units, query, attrKey, values, valuesLen, currentValue, baseAttr, doer, convertedValue, sensor = this,
+            var i, n, m, o, v, unitArgs, valueArgs, unit, units, query, attrKey, values, valuesLen, currentValue, baseAttr, doer, convertedValue, sensor = this,
                 el = sensor.el,
                 watchers = sensor.watchers,
                 activeAttrs = {},
                 elementStyles = win.getComputedStyle(el),
-                dimensions = sensor.el.getBoundingClientRect();
+                dimensions = sensor.el.getBoundingClientRect(),
+                elHeight = parseFloat(dimensions.height),
+                elWidth = parseFloat(dimensions.width);
             sensor.dimensions = dimensions;
             for (n in watchers) {
                 baseAttr = baseAttrs[n];
@@ -184,8 +156,9 @@
                     queries = watchers[n];
                     doer = baseAttr.fn;
                     if (doer && typeof doer === 'function') {
-                        currentValue = doer.apply(sensor, [el, dimensions, elementStyles]);
-                        unitArgs = [currentValue, doer, el, dimensions, elementStyles];
+                        valueArgs = [el, elWidth, elHeight, elementStyles, dimensions];
+                        currentValue = doer.apply(sensor, valueArgs);
+                        unitArgs = [currentValue, doer].concat(valueArgs);
                         for (v in queries) {
                             query = queries[v];
                             val = parseFloat(v);
@@ -216,19 +189,9 @@
             }
         },
         resetScroller: function () {
-            var sensor = this,
-                sensorEl = sensor.sensor,
-                expander = sensor.expander,
-                expanderChild = sensor.expanderChild,
-                shrinker = sensor.shrinker;
-            expanderChild.style.width = expander.offsetWidth + 10 + 'px';
-            expanderChild.style.height = expander.offsetHeight + 10 + 'px';
-            expander.scrollLeft = expander.scrollWidth;
-            expander.scrollTop = expander.scrollHeight;
-            shrinker.scrollLeft = shrinker.scrollWidth;
-            shrinker.scrollTop = shrinker.scrollHeight;
-            sensor.lastWidth = sensorEl.offsetWidth;
-            sensor.lastHeight = sensorEl.offsetHeight;
+            var sensor = this;
+            sensor.lastWidth = sensor.el.offsetWidth;
+            sensor.lastHeight = sensor.el.offsetHeight;
         },
         hasWatcher: function (obj) {
             var n, m, v, sensor = this,
@@ -307,10 +270,8 @@
     ElementQuery.prototype = {
         reinit: function (sheets) {
             var elQuery = this;
-            if (sheets) {
-                elQuery.styles = sheets;
-                elQuery.update();
-            }
+            if (sheets) elQuery.styles = sheets;
+            elQuery.update();
             return elQuery;
         },
         // parse the css
@@ -318,11 +279,17 @@
             var i, elQuery = this;
             if (elQuery.styles) {
                 each(elQuery.styles, function (sheet, index, sheets) {
-                    each(sheet.rules, function (rule, index, rules) {
-                        elQuery.addRule(rule.selectorText);
-                    });
+                    if (typeof sheet === 'object') {
+                        var rules = sheet.rules || sheet.cssRules;
+                        each(rules, function (rule, index, rules) {
+                            if (rule.selectorText) {
+                                elQuery.addRule(rule.selectorText);
+                            }
+                        });
+                    }
                 });
             }
+            return elQuery;
         },
         addRule: function (selector) {
             var elQuery = this;
@@ -352,12 +319,15 @@
                         els = document.querySelectorAll(currentSelector);
                         each(els, function (el) {
                             each(targetedMeasurement, function (target) {
-                                elQuery.attach(el, target);
+                                if (el instanceof HTMLElement) {
+                                    elQuery.attach(el, target);
+                                }
                             });
                         });
                     });
                 }
             });
+            return elQuery;
         },
         // watch these els
         attach: function (el, matchers) {
@@ -376,6 +346,7 @@
                 els.push(el);
             }
             if (!dataCache.sensors[elIndex]) {
+                // window.console.log(dataCache.sensors[elIndex]);
                 dataCache.sensors[elIndex] = new Sensor(el);
             }
             sensor = dataCache.sensors[elIndex];
@@ -393,6 +364,7 @@
                     dataCache.update();
                 }
             }
+            return elQ;
         },
         unitProcessor: function (unit, fn) {
             var elQuery = this;
@@ -408,36 +380,32 @@
             return elQuery;
         }
     };
-    win.addEventListener('load', function (e) {
-        elementQuery.reinit(doc.styleSheets);
-        elementQuery.applySensorValues();
-    }, true);
     win.ElementQuery = ElementQuery;
     win.elementQuery = new win.ElementQuery();
 }(window, document));
-// elementQuery.unitProcessor('%', function (val, proc, el, dims, computedStyle) {
-//     var parent = el.parentNode,
-//         parentDims = parent.getBoundingClientRect(),
-//         parentStyles = parent.getComputedStyle(),
-//         parentVal = proc.apply(this, [parent, parentDims, parentStyles]);
-//     return (val / parentVal);
-// });
-// elementQuery.unitProcessor('em', function (val, proc, el, dimensions, computedStyle) {
-//     return (val / parseFloat(computedStyle.fontSize));
-// });
-// elementQuery.addProcessor('area', function (el, dimensions, computedStyle) {
-//     return dims.height * dims.width;
-// });
-// elementQuery.addProcessor('diagonal', function (el, dimensions, computedStyle) {
-//     var height = dims.height,
-//         width = dims.width;
-//     return Math.pow((height * height * width * width), 0.5);
-// });
-// elementQuery.addProcessor('aspect', function (el, dimensions, computedStyle) {
-//     return dims.width / dims.height;
-// });
-// elementQuery.addProcessor('perimeter', function (el, dimensions, computedStyle) {
-//     var height = dims.height,
-//         width = dims.width;
-//     return ((height * 2) + (width * 2));
-// });
+elementQuery.unitProcessor('%', function (val, proc, el, width, height, computedStyle, dimensions) {
+    var parent = el.parentNode,
+        parentDims = parent.getBoundingClientRect(),
+        parentStyles = parent.getComputedStyle(),
+        parentHeight = parseFloat(parentStyles.height),
+        parentWidth = parseFloat(parentStyles.width),
+        parentVal = proc.apply(this, [parent, parentWidth, parentHeight, parentDims, parentStyles]);
+    return (val / parentVal);
+});
+elementQuery.unitProcessor('em', function (val, proc, el, width, height, computedStyle, dimensions) {
+    return (val / parseFloat(computedStyle.fontSize));
+});
+elementQuery.addProcessor('area', function (el, width, height, computedStyle, dimensions) {
+    return height * width;
+});
+elementQuery.addProcessor('diagonal', function (el, width, height, computedStyle, dimensions) {
+    return Math.pow((height * height * width * width), 0.5);
+});
+elementQuery.addProcessor('aspect', function (el, width, height, computedStyle, dimensions) {
+    return width / height;
+});
+elementQuery.addProcessor('perimeter', function (el, width, height, computedStyle, dimensions) {
+    return ((height * 2) + (width * 2));
+});
+elementQuery.reinit(document.styleSheets);
+elementQuery.applySensorValues();
