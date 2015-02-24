@@ -1,5 +1,5 @@
 # ElementQuery
-With support for most units (px, em, %, rem, in, cm, vh, vw, pc, pt, mm) and the ability to custom roll your own, this plugin is highly extensible. Listen for area changes, height, width, aspect ratio, diagonal, perimiter, and any other changes that you can imagine by adding custom processors to the global instance. Weighing in at only 5kb minified, this plugin acts like more of an extension of your browsers own computational capabilities.
+With support for most units (px, em, %, rem, in, cm, vh, vw, pc, pt, mm) and the ability to custom roll your own, this plugin is highly extensible. Listen for area changes, height, width, aspect ratio, diagonal, perimiter, and any other changes that you can imagine by adding custom processors to the global instance. Weighing in at only 4.8kb minified, this plugin acts like more of an extension of your browser's own computational capabilities.
 
 In the following example there are 4 main parts:
 ```css
@@ -21,7 +21,39 @@ This is the basic breakdown and functionality that this extension uses to comput
 
 ## Processors
 
-Processors should be called before the window onload method so that they can be used to parse the available stylesheets. This is so that they can do not have to scan the available stylesheets multiple times with the help of the reinit method.
+Processors should be applied before the window onload method so that they can be used to parse the available stylesheets. This is so that they can do not have to scan the available stylesheets multiple times.
+
+### Query Processor
+
+Queries that are already included include height and width. All queries support min and max values. All query handlers must return a number and be constructed in the following way:
+
+```javascript
+elementQuery.addProcessor(property, handler);
+```
+
+While the context of the handlers when they are run is the sensor object that they are tied to, use of this object and the attached elements is not recommended. Most of the calculations that you will need to do use information from the dimensions of the element and the styles of that element. Both the getComputedStyle and getBoundingClientRect functions have been applied to the element being sensed, are cached for all of the queries that are to be run against it.
+
+below are some examples of different queries that you can run on elements you are watching.
+
+```javascript
+
+elementQuery.addProcessor('area', function (el, width, height) {
+    return height * width;
+});
+
+elementQuery.addProcessor('diagonal', function (el, width, height) {
+    return Math.pow(((height * height) + (width * width)), 0.5);
+});
+
+elementQuery.addProcessor('aspect', function (el, width, height) {
+    return width / height;
+});
+
+elementQuery.addProcessor('perimeter', function (el, width, height) {
+    return ((height * 2) + (width * 2));
+});
+
+```
 
 ### Unit Processor
 
@@ -137,39 +169,6 @@ elementQuery.unitProcessor('vmin', function (val) {
 
 ```
 
-
-### Query Processor
-
-Queries that are already included include height and width. All queries support min and max values. All query handlers must return a number and be constructed in the following way:
-
-```javascript
-elementQuery.addProcessor(property, handler);
-```
-
-While the context of the handlers when they are run is the sensor object that they are tied to, use of this object and the attached elements is not recommended. Most of the calculations that you will need to do use information from the dimensions of the element and the styles of that element. Both the getComputedStyle and getBoundingClientRect functions have been applied to the element being sensed, are cached for all of the queries that are to be run against it.
-
-below are some examples of different queries that you can run on elements you are watching.
-
-```javascript
-
-elementQuery.addProcessor('area', function (el, width, height) {
-    return height * width;
-});
-
-elementQuery.addProcessor('diagonal', function (el, width, height) {
-    return Math.pow(((height * height) + (width * width)), 0.5);
-});
-
-elementQuery.addProcessor('aspect', function (el, width, height) {
-    return width / height;
-});
-
-elementQuery.addProcessor('perimeter', function (el, width, height) {
-    return ((height * 2) + (width * 2));
-});
-
-```
-
 ## API Endpoints -- ElementQuery
 
 #### ElementQuery.addProcessor(name, processor);
@@ -237,4 +236,5 @@ method that converts attribute strings into extend objects.
 1. ~~Ability to add custom units~~
 2. ~~Ability to get resize sensor by passing html element~~
 3. ~~Ability to add trailing functions that run after the element queries~~
-4. Try watching elements using alternative sensory methods (object resize, iframe resize).
+4. ~~Decouple querying element from unit calculation and attribute list creation~~
+5. Try watching elements using alternative sensory methods (object resize, iframe resize).
