@@ -101,10 +101,6 @@ below are some examples of different queries that you can run on elements you ar
 
 ```javascript
 
-elementQuery.unitProcessor('em', function (val, proc, el, width, height) {
-    return (val / parseFloat(computedStyle.fontSize));
-});
-
 elementQuery.addProcessor('area', function (el, width, height) {
     return height * width;
 });
