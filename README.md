@@ -74,6 +74,19 @@ elementQuery.unitProcessor('em', function (val, proc, el, width, height, compute
 });
 ```
 
+#### rem
+
+the following is an example of the computation necessary to achieve rem units. In this case it was a good idea to cache the base font size, since it rarely if ever changes.
+
+```javascript
+elementQuery.unitProcessor('rem', (function () {
+    var baseFont = window.getComputedStyle(document.documentElement).fontSize;
+    return function (val) {
+        return (val / baseFont);
+    };
+}()));
+```
+
 ### Query Processor
 
 Queries that are already included include height and width. All queries support min and max values. All query handlers must return a number and be constructed in the following way:
@@ -160,9 +173,6 @@ checks to see if the current sensor object is watching for changes down to the s
 
 #### Sensor.parseObject(attributeString);
 method that converts attribute strings into extend objects.
-
-#### Sensor.resetScroller();
-resets the scroll positions on the shrink and expand divs so that they can sense another resize.
 
 #### Sensor.update();
 method that initializes the recalculation of the resized div, as determined by scroll events hosted in the children of the targeted element. First the values are recalulated, then the correct attributes are added and removed to the targeted html elements.

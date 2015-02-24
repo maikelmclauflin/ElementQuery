@@ -116,7 +116,7 @@
                     diffWidth = (sensor.el.offsetWidth !== sensor.lastWidth);
                 if (diffHeight || diffWidth) {
                     sensor.update();
-                    sensor.resetScroller(sensor);
+                    sensor.resetDimensions();
                 }
                 window.requestAnimationFrame(resizeHandler);
             }.bind(sensor);
@@ -132,8 +132,6 @@
         for (n in defaults) {
             sensor[n] = defaults[n];
         }
-        // sensor.lastHeight = el.offsetHeight;
-        // sensor.lastWidth = el.offsetWidth;
         attachResizeHandlers(sensor);
         return sensor;
     }
@@ -188,7 +186,7 @@
                 if (!valuesLen) el.removeAttribute(n);
             }
         },
-        resetScroller: function () {
+        resetDimensions: function () {
             var sensor = this;
             sensor.lastWidth = sensor.el.offsetWidth;
             sensor.lastHeight = sensor.el.offsetHeight;
@@ -264,7 +262,8 @@
         each(baseAttrs, function (obj, name) {
             obj.regex = regexMaker(name, baseRegExp);
         });
-        elQuery.reinit(sheets);
+        elQuery.styles = sheets;
+        // elQuery.reinit(sheets);
         return elQuery;
     }
     ElementQuery.prototype = {
@@ -278,54 +277,61 @@
         update: function () {
             var i, elQuery = this;
             if (elQuery.styles) {
-                each(elQuery.styles, function (sheet, index, sheets) {
-                    if (typeof sheet === 'object') {
-                        var rules = sheet.rules || sheet.cssRules;
-                        each(rules, function (rule, index, rules) {
-                            if (rule.selectorText) {
-                                elQuery.addRule(rule.selectorText);
-                            }
-                        });
-                    }
+                each(baseAttrs, function (computer, name) {
+                    elQuery.scanSelectors(computer.regex, function (match, selector) {
+                        elQuery.addRule(match, selector);
+                    });
                 });
             }
             return elQuery;
         },
-        addRule: function (selector) {
-            var elQuery = this;
-            each(baseAttrs, function (computer, name) {
-                var matchingElements = selector.match(computer.regex);
-                if (matchingElements) {
-                    each(matchingElements, function (match, i) {
-                        var currentSelector = selector.split(match)[0] + match.replace(),
-                            targetedMeasurement = [],
-                            currentMatches = [];
-                        each(baseAttrs, function (obj, name) {
-                            var i, attrMatcher = regexMaker(name, attrRegExp),
-                                maxedOut = currentSelector.match(attrMatcher),
-                                targeted = match.match(attrMatcher);
-                            if (maxedOut) {
-                                for (i = 0; i < maxedOut.length; i++) {
-                                    currentMatches.push(maxedOut[i]);
-                                    currentSelector = currentSelector.split(maxedOut[i]).join('');
-                                }
+        scanSelectors: function (regex, callback) {
+            var matchingStrings, allRules, elQuery = this;
+            each(elQuery.styles, function (sheet, index, sheets) {
+                if (typeof sheet === 'object') {
+                    allRules = sheet.rules || sheet.cssRules;
+                    each(allRules, function (rule, index, allRules) {
+                        selector = rule.selectorText;
+                        if (selector) {
+                            matchingStrings = selector.match(regex);
+                            if (matchingStrings) {
+                                each(matchingStrings, function (match) {
+                                    callback.apply(elQuery, [match, selector, rule]);
+                                });
                             }
-                            if (targeted) {
-                                for (i = 0; i < targeted.length; i++) {
-                                    targetedMeasurement.push(targeted[i]);
-                                }
-                            }
-                        });
-                        els = document.querySelectorAll(currentSelector);
-                        each(els, function (el) {
-                            each(targetedMeasurement, function (target) {
-                                if (el instanceof HTMLElement) {
-                                    elQuery.attach(el, target);
-                                }
-                            });
-                        });
+                        }
                     });
                 }
+            });
+        },
+        addRule: function (match, selector) {
+            var i, maxedOut, targeted, attrMatcher, currentMatches, targetedMeasurement, currentSelector, matchingStrings, elQuery = this;
+            currentSelector = selector.split(match)[0] + match.replace();
+            targetedMeasurement = [];
+            currentMatches = [];
+            each(baseAttrs, function (obj, name) {
+                attrMatcher = regexMaker(name, attrRegExp);
+                maxedOut = currentSelector.match(attrMatcher);
+                targeted = match.match(attrMatcher);
+                if (maxedOut) {
+                    for (i = 0; i < maxedOut.length; i++) {
+                        currentMatches.push(maxedOut[i]);
+                        currentSelector = currentSelector.split(maxedOut[i]).join('');
+                    }
+                }
+                if (targeted) {
+                    for (i = 0; i < targeted.length; i++) {
+                        targetedMeasurement.push(targeted[i]);
+                    }
+                }
+            });
+            els = doc.querySelectorAll(currentSelector);
+            each(els, function (el) {
+                each(targetedMeasurement, function (target) {
+                    if (el instanceof HTMLElement) {
+                        elQuery.attach(el, target);
+                    }
+                });
             });
             return elQuery;
         },
@@ -351,7 +357,7 @@
             }
             sensor = dataCache.sensors[elIndex];
             sensor.add(matchers);
-            sensor.resetScroller();
+            sensor.resetDimensions();
             return elQ;
         },
         applySensorValues: function () {
@@ -380,8 +386,12 @@
             return elQuery;
         }
     };
+    win.onload = function () {
+        elementQuery.reinit();
+        elementQuery.applySensorValues();
+    };
     win.ElementQuery = ElementQuery;
-    win.elementQuery = new win.ElementQuery();
+    win.elementQuery = new win.ElementQuery(doc.styleSheets);
 }(window, document));
 elementQuery.unitProcessor('%', function (val, proc, el, width, height, computedStyle, dimensions) {
     var parent = el.parentNode,
@@ -394,10 +404,12 @@ elementQuery.unitProcessor('%', function (val, proc, el, width, height, computed
 });
 elementQuery.unitProcessor('em', function (val, proc, el, width, height, computedStyle, dimensions) {
     return (val / parseFloat(computedStyle.fontSize));
-});
-elementQuery.unitProcessor('rem', function (val, proc, el, width, height, computedStyle, dimensions) {
-    return (val / parseFloat(document.documentElement.style.fontSize));
-});
+});elementQuery.unitProcessor('rem', (function () {
+    var baseFont = window.getComputedStyle(document.documentElement).fontSize;
+    return function (val) {
+        return (val / baseFont);
+    };
+}()));
 elementQuery.addProcessor('area', function (el, width, height, computedStyle, dimensions) {
     return height * width;
 });
@@ -410,5 +422,3 @@ elementQuery.addProcessor('aspect', function (el, width, height, computedStyle, 
 elementQuery.addProcessor('perimeter', function (el, width, height, computedStyle, dimensions) {
     return ((height * 2) + (width * 2));
 });
-elementQuery.reinit(document.styleSheets);
-elementQuery.applySensorValues();
