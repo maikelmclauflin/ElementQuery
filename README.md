@@ -94,6 +94,46 @@ elementQuery.unitProcessor('rem', (function () {
 }()));
 ```
 
+the following functions show a variety of physical unit processors that are created by utilizing the physical unit api endpoint on the elementQuery instance.
+
+```javascript
+
+elementQuery.unitProcessor('in', elementQuery.physicalDistance(96));
+elementQuery.unitProcessor('cm', elementQuery.physicalDistance(37.79527559055118));
+elementQuery.unitProcessor('mm', elementQuery.physicalDistance(3.779527559055118));
+elementQuery.unitProcessor('pc', elementQuery.physicalDistance(16));
+elementQuery.unitProcessor('pt', elementQuery.physicalDistance(1.333333333333333));
+
+```
+
+the following units are known as _ units
+
+```javascript
+
+
+elementQuery.unitProcessor('vw', function (val) {
+    var width = window.innerWidth;
+    return (val / (width / 100));
+});
+
+elementQuery.unitProcessor('vh', function (val) {
+    var height = window.innerHeight;
+    return (val / (height / 100));
+});
+
+elementQuery.unitProcessor('vmax', function (val) {
+    var max = Math.max(window.innerHeight, window.innerWidth);
+    return (val / (max / 100));
+});
+
+elementQuery.unitProcessor('vmin', function (val) {
+    var min = Math.min(window.innerHeight, window.innerWidth);
+    return (val / (min / 100));
+});
+
+```
+
+
 ### Query Processor
 
 Queries that are already included include height and width. All queries support min and max values. All query handlers must return a number and be constructed in the following way:
