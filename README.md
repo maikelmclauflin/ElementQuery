@@ -17,7 +17,7 @@ Next is the unit, the whats of the value. In this case we have 40 whats? 40 ems.
 
 Finally we have the min or max values that are prepended to the query. These determine, just like media queries, if the attribute will be applied or ignored / removed.
 
-This is the basic breakdown and functionality that this extension uses to compute and apply it's attributes.
+This is the basic breakdown and functionality that this extension uses to compute and apply attributes to DOM elements.
 
 ## Processors
 
