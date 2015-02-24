@@ -224,5 +224,5 @@ method that initializes the recalculation of the resized div, as determined by s
 ## Future Releases
 1. ~~Ability to add custom units~~
 2. ~~Ability to get resize sensor by passing html element~~
-3. Ability to add trailing functions that run after the element queries
+3. ~~Ability to add trailing functions that run after the element queries~~
 4. Try watching elements using alternative sensory methods (object resize, iframe resize).

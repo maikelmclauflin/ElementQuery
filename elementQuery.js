@@ -54,7 +54,8 @@
         makeDefaults = function (el) {
             return {
                 el: el,
-                watchers: {}
+                watchers: {},
+                annexes: []
             };
         },
         baseAttrs = {
@@ -114,6 +115,7 @@
                     diffWidth = (sensor.el.offsetWidth !== sensor.lastWidth);
                 if (diffHeight || diffWidth) {
                     sensor.update();
+                    sensor.runAnnexes();
                     sensor.resetDimensions();
                 }
                 window.requestAnimationFrame(resizeHandler);
@@ -253,9 +255,18 @@
         add: function (matcher) {
             var i, obj, sensor = this;
             obj = sensor.parseObject(matcher);
-            // if (!sensor.hasWatcher(obj)) {
             sensor.extendWatcher(obj);
-            // }
+            return sensor;
+        },
+        annex: function (callback) {
+            this.annexes.push(callback);
+            return this;
+        },
+        runAnnexes: function () {
+            var i, sensor = this;
+            for (i = 0; i < sensor.annexes.length; i++) {
+                sensor.annexes[i].apply(sensor);
+            }
             return sensor;
         }
     };
@@ -266,7 +277,6 @@
             obj.regex = regexMaker(name, baseRegExp);
         });
         elQuery.styles = sheets;
-        // elQuery.reinit(sheets);
         return elQuery;
     }
     ElementQuery.prototype = {
@@ -393,7 +403,7 @@
         },
         physicalDistance: function (divisor) {
             return function (val) {
-                return ((val / devicePixelRatio) / divisor);
+                return ((val / win.devicePixelRatio) / divisor);
             };
         }
     };
@@ -404,54 +414,54 @@
     win.ElementQuery = ElementQuery;
     win.elementQuery = new win.ElementQuery(doc.styleSheets);
 }(window, document));
-elementQuery.unitProcessor('%', function (val, proc, el) {
-    var parent = el.parentNode,
-        pDims = parent.getBoundingClientRect(),
-        pStyles = parent.getComputedStyle(),
-        pHeight = parseFloat(parentStyles.height),
-        pWidth = parseFloat(parentStyles.width),
-        pVal = proc.apply(this, [parent, pWidth, pHeight, pDims, pStyles]);
-    return (val / parentVal);
-});
-elementQuery.unitProcessor('em', function (val, proc, el, width, height, computedStyle, dimensions) {
-    return (val / parseFloat(computedStyle.fontSize));
-});
-elementQuery.unitProcessor('rem', (function (win, doc) {
-    var baseFont = parseFloat(win.getComputedStyle(doc.documentElement).fontSize);
-    return function (val) {
-        return (val / baseFont);
-    };
-}(window, document)));
-elementQuery.unitProcessor('in', elementQuery.physicalDistance(96));
-elementQuery.unitProcessor('cm', elementQuery.physicalDistance(37.79527559055118));
-elementQuery.unitProcessor('mm', elementQuery.physicalDistance(3.779527559055118));
-elementQuery.unitProcessor('pc', elementQuery.physicalDistance(16));
-elementQuery.unitProcessor('pt', elementQuery.physicalDistance(1.333333333333333));
-elementQuery.unitProcessor('vw', function (val) {
-    var width = window.innerWidth;
-    return (val / (width / 100));
-});
-elementQuery.unitProcessor('vh', function (val) {
-    var height = window.innerHeight;
-    return (val / (height / 100));
-});
-elementQuery.unitProcessor('vmax', function (val) {
-    var max = Math.max(window.innerHeight, window.innerWidth);
-    return (val / (max / 100));
-});
-elementQuery.unitProcessor('vmin', function (val) {
-    var min = Math.min(window.innerHeight, window.innerWidth);
-    return (val / (min / 100));
-});
-elementQuery.addProcessor('area', function (el, width, height, computedStyle, dimensions) {
-    return height * width;
-});
-elementQuery.addProcessor('diagonal', function (el, width, height, computedStyle, dimensions) {
-    return Math.pow((height * height * width * width), 0.5);
-});
-elementQuery.addProcessor('aspect', function (el, width, height, computedStyle, dimensions) {
-    return width / height;
-});
-elementQuery.addProcessor('perimeter', function (el, width, height, computedStyle, dimensions) {
-    return ((height * 2) + (width * 2));
-});
+// elementQuery.unitProcessor('%', function (val, proc, el) {
+//     var parent = el.parentNode,
+//         pDims = parent.getBoundingClientRect(),
+//         pStyles = parent.getComputedStyle(),
+//         pHeight = parseFloat(parentStyles.height),
+//         pWidth = parseFloat(parentStyles.width),
+//         pVal = proc.apply(this, [parent, pWidth, pHeight, pDims, pStyles]);
+//     return (val / parentVal);
+// });
+// elementQuery.unitProcessor('em', function (val, proc, el, width, height, computedStyle, dimensions) {
+//     return (val / parseFloat(computedStyle.fontSize));
+// });
+// elementQuery.unitProcessor('rem', (function (win, doc) {
+//     var baseFont = parseFloat(win.getComputedStyle(doc.documentElement).fontSize);
+//     return function (val) {
+//         return (val / baseFont);
+//     };
+// }(window, document)));
+// elementQuery.unitProcessor('in', elementQuery.physicalDistance(96));
+// elementQuery.unitProcessor('cm', elementQuery.physicalDistance(37.79527559055118));
+// elementQuery.unitProcessor('mm', elementQuery.physicalDistance(3.779527559055118));
+// elementQuery.unitProcessor('pc', elementQuery.physicalDistance(16));
+// elementQuery.unitProcessor('pt', elementQuery.physicalDistance(1.333333333333333));
+// elementQuery.unitProcessor('vw', function (val) {
+//     var width = window.innerWidth;
+//     return (val / (width / 100));
+// });
+// elementQuery.unitProcessor('vh', function (val) {
+//     var height = window.innerHeight;
+//     return (val / (height / 100));
+// });
+// elementQuery.unitProcessor('vmax', function (val) {
+//     var max = Math.max(window.innerHeight, window.innerWidth);
+//     return (val / (max / 100));
+// });
+// elementQuery.unitProcessor('vmin', function (val) {
+//     var min = Math.min(window.innerHeight, window.innerWidth);
+//     return (val / (min / 100));
+// });
+// elementQuery.addProcessor('area', function (el, width, height, computedStyle, dimensions) {
+//     return height * width;
+// });
+// elementQuery.addProcessor('diagonal', function (el, width, height, computedStyle, dimensions) {
+//     return Math.pow((height * height * width * width), 0.5);
+// });
+// elementQuery.addProcessor('aspect', function (el, width, height, computedStyle, dimensions) {
+//     return width / height;
+// });
+// elementQuery.addProcessor('perimeter', function (el, width, height, computedStyle, dimensions) {
+//     return ((height * 2) + (width * 2));
+// });
