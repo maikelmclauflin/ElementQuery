@@ -106,7 +106,7 @@ elementQuery.unitProcessor('pt', elementQuery.physicalDistance(1.333333333333333
 
 ```
 
-the following units are known as _ units
+The following unit processors are known as viewport units. Their names are fairly self explainatory.
 
 ```javascript
 
