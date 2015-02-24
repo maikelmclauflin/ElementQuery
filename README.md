@@ -94,7 +94,7 @@ elementQuery.unitProcessor('rem', (function () {
 }()));
 ```
 
-the following functions show a variety of physical unit processors that are created by utilizing the physical unit api endpoint on the elementQuery instance.
+the following functions show a variety of physical unit processors that are created by utilizing the physical unit api endpoint on the elementQuery instance. The numbers being passed to the method is the number that will convert the value that is passed in by the closure that is returned to a physical value, after the device pixel density has been taken into account.
 
 ```javascript
 
