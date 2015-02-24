@@ -221,10 +221,6 @@ checks to see if the current sensor object is watching for changes down to the s
 #### Sensor.parseObject(attributeString);
 method that converts attribute strings into extend objects.
 
-#### Sensor.update();
-method that initializes the recalculation of the resized div, as determined by scroll events hosted in the children of the targeted element. First the values are recalulated, then the correct attributes are added and removed to the targeted html elements.
-
-
 ## Future Releases
 1. ~~Ability to add custom units~~
 2. ~~Ability to get resize sensor by passing html element~~
