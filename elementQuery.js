@@ -25,32 +25,6 @@
             var regex = new RegExp(string_to_replace);
             return target.replace(regex, replacement);
         },
-        defaultCSS = {
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            position: 'absolute',
-            overflow: 'scroll',
-            'z-index': -1,
-            visibility: 'hidden'
-        },
-        css = function (el, css) {
-            var n;
-            for (n in css) {
-                el.style[n] = css[n];
-            }
-        },
-        makeContainer = function (styles) {
-            var n, div = doc.createElement('div');
-            css(div, styles);
-            return div;
-        },
-        deepInternalCss = {
-            position: 'absolute',
-            left: 0,
-            top: 0
-        },
         makeDefaults = function (el) {
             return {
                 el: el,
@@ -144,6 +118,7 @@
                     if (!valuesLen) el.removeAttribute(attrName);
                 }
             }
+            return sensor;
         },
         update: function () {
             var n, name, base, formerVal, newVal, updatedAtts, sensor = this,
@@ -167,7 +142,7 @@
                 if (newVal !== formerVal) {
                     formerVals[n] = newVal;
                     updateThese.push(n);
-                    sensor.currentValidQueries[n] = sensor.calculateValues(n, newVal);
+                    sensor.calculateValues(n, newVal);
                 }
             }
             for (n = 0; n < updateThese.length; n++) {
@@ -177,6 +152,7 @@
             if (updatedAtts) {
                 sensor.runAnnexes();
             }
+            return sensor;
         },
         calculateValues: function (type, currentValue) {
             var i, n, m, o, v, unitArgs, unit, units, query, attrKey, values, valuesLen, baseAttr, doer, convertedValue, queries, activeAttrs, sensor = this,
@@ -212,8 +188,9 @@
                         }
                     }
                 }
-                return activeAttrs;
+                sensor.currentValidQueries[type] = activeAttrs;
             }
+            return sensor;
         },
         hasWatcher: function (obj) {
             var n, m, v, sensor = this,
@@ -233,9 +210,9 @@
                             }
                         }
                     }
-                    return 0;
                 }
             }
+            return 0;
         },
         parseObject: function (str) {
             var n, minMax, value,
@@ -312,7 +289,6 @@
             elQuery.update();
             return elQuery;
         },
-        // parse the css
         update: function () {
             var i, elQuery = this;
             if (elQuery.styles) {

@@ -212,7 +212,7 @@ reads the element attached to the sensor in the first step and caches values to 
 method to calculate theoretical values of the element attributes being queried. This method handles unit conversion from the value calculated by the query handlers. Returns undefined if no queries are available for that type. Returns object of min and max values to be applied if the value passed in is on the right side of the min / max values in the correct units.
 
 #### Sensor.updateUI(type);
-method that is triggered only when there was a difference in the calculatedValues. Exposed to allow the user to force update the ui if ever necessary. Useless of course, unless you update the data attached to the sensor itself.
+method that is triggered only when there was a difference in the calculatedValues. Exposed to allow the user to force update the ui if ever necessary. Useless of course, unless you recalculate the values and update the data attached to the sensor itself, which is done every frame anyway.
 
 #### Sensor.add(attributeString);
 method that is passed an attribute string to determine extend the sensor's watch functions. From this string a simple object is created and is then extended into the sensor using the extendWatcher method.
