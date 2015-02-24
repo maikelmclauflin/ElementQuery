@@ -122,7 +122,7 @@ the following is an example of the computation necessary to achieve rem units. I
 
 ```javascript
 elementQuery.unitProcessor('rem', (function () {
-    var baseFont = parseFloat(win.getComputedStyle(doc.documentElement).fontSize)
+    var baseFont = parseFloat(win.getComputedStyle(doc.documentElement).fontSize);
     return function (val) {
         return (val / baseFont);
     };
@@ -203,13 +203,16 @@ method that iterates over the available styles and scans each selector for valid
 
 ## API Endpoints -- Sensor
 
-The Sensor factory makes objects that directly construct the resize watchers and monitor the elements themselves.
+The Sensor factory makes objects monitor the DOM elements themselves.
 
 #### Sensor.update();
 reads the element attached to the sensor in the first step and caches values to update the ui in a second step.
 
 #### Sensor.calculateValues(type, value);
 method to calculate theoretical values of the element attributes being queried. This method handles unit conversion from the value calculated by the query handlers. Returns undefined if no queries are available for that type. Returns object of min and max values to be applied if the value passed in is on the right side of the min / max values in the correct units.
+
+#### Sensor.updateUI(type);
+triggered only when there was a difference in the calculatedValues. Exposed to allow the user to force update the ui if ever necessary.
 
 #### Sensor.add(attributeString);
 method that is passed an attribute string to determine extend the sensor's watch functions. From this string a simple object is created and is then extended into the sensor using the extendWatcher method.
