@@ -395,6 +395,9 @@ elementQuery.unitProcessor('%', function (val, proc, el, width, height, computed
 elementQuery.unitProcessor('em', function (val, proc, el, width, height, computedStyle, dimensions) {
     return (val / parseFloat(computedStyle.fontSize));
 });
+elementQuery.unitProcessor('rem', function (val, proc, el, width, height, computedStyle, dimensions) {
+    return (val / parseFloat(document.documentElement.style.fontSize));
+});
 elementQuery.addProcessor('area', function (el, width, height, computedStyle, dimensions) {
     return height * width;
 });

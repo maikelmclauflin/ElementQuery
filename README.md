@@ -143,9 +143,6 @@ The Sensor factory makes objects that directly construct the resize watchers and
 #### Sensor.add(attributeString);
 method that is passed an attribute string to determine extend the sensor's watch functions. From this string a simple object is created and is then extended into the sensor using the extendWatcher method.
 
-#### Sensor.attachScrollHandler();
-attaches scroll handlers to the shink and expand watch divs
-
 #### Sensor.extendWatcher(extendObject);
 extends the watch parameters and breakpoints of the sensor. Takes one argument in the following format:
 ```javascript
