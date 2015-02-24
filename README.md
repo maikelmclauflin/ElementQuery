@@ -3,7 +3,7 @@ With support for most units (px, em, %, rem, in, cm, vh, vw, pc, pt, mm) and the
 
 In the following example there are 4 main parts:
 ```css
-[{min / max}-{propery}~="{value}{unit}"]
+[{min / max}-{propery}~="{value}(unit)"]
 
 [min-width~="40em"]
 
