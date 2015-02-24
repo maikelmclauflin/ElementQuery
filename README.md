@@ -122,7 +122,7 @@ the following is an example of the computation necessary to achieve rem units. I
 
 ```javascript
 elementQuery.unitProcessor('rem', (function () {
-    var baseFont = window.getComputedStyle(document.documentElement).fontSize;
+    var baseFont = parseFloat(win.getComputedStyle(doc.documentElement).fontSize)
     return function (val) {
         return (val / baseFont);
     };
