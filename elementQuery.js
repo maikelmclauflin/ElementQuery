@@ -36,12 +36,12 @@
         },
         baseAttrs = {
             height: {
-                fn: function (el, dims, computedStyle) {
+                fn: function (el, width, height, computedStyle) {
                     return parseFloat(computedStyle.height);
                 }
             },
             width: {
-                fn: function (el, dims, computedStyle) {
+                fn: function (el, width, height, computedStyle) {
                     return parseFloat(computedStyle.width);
                 }
             }
